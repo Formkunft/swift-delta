@@ -119,7 +119,7 @@ public enum Delta<Element> {
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
 	/// In the `modified` case, `transform` is applied concurrently to both sides.
-	@available(macOS 10.15.0, *)
+	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
 		_ transform: @Sendable (Element) async -> T
@@ -139,7 +139,7 @@ public enum Delta<Element> {
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
 	/// In the `modified` case, `transform` is applied concurrently to both sides.
-	@available(macOS 10.15.0, *)
+	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
 		_ transform: @Sendable (Element) async throws -> T
