@@ -17,14 +17,67 @@
 //  limitations under the License.
 //
 
+/// A type representing a source element, a target element, or both a source and a target element.
 public enum Delta<Element> {
+	/// The type of the elements.
 	public typealias Element = Element
 	public typealias Side = DeltaSide
 	
+	/// A source element.
+	/// 
+	/// Conceptually, this is a value that was deleted and thus no target element is available.
 	case deleted(source: Element)
+	/// A target element.
+	/// 
+	/// Conceptually, this is a value that was added and thus no source element is available.
 	case added(target: Element)
+	/// A source element and a target element.
+	/// 
+	/// Conceptually, this is a value that was modified and both the source and the target element are available.
+	/// The source and target elements can be different or equal.
 	case modified(source: Element, target: Element)
 	
+	/// Creates a modified delta from a source and a target element.
+	@inlinable @inline(__always)
+	public init(source: Element, target: Element) {
+		self = .modified(source: source, target: target)
+	}
+	
+	/// Creates a delta from a source and a target element.
+	/// 
+	/// If the source element is `nil`, the delta is `.added(target:)`.
+	/// Otherwise, the delta is `.modified(source:target:)`.
+	@inlinable @inline(__always)
+	public init(source: Element?, target: Element) {
+		if let source {
+			self = .modified(source: source, target: target)
+		}
+		else {
+			self = .added(target: target)
+		}
+	}
+	
+	/// Creates a delta from a source and a target element.
+	/// 
+	/// If the target element is `nil`, the delta is `.deleted(source:)`.
+	/// Otherwise, the delta is `.modified(source:target:)`.
+	@inlinable @inline(__always)
+	public init(source: Element, target: Element?) {
+		if let target {
+			self = .modified(source: source, target: target)
+		}
+		else {
+			self = .deleted(source: source)
+		}
+	}
+	
+	/// Creates a delta from a source and a target element.
+	/// 
+	/// If both the source and the target element are `nil`, the delta is `nil`.
+	/// If the source element is `nil`, the delta is `.added(target:)`.
+	/// If the target element is `nil`, the delta is `.deleted(source:)`.
+	/// Otherwise, the delta is `.modified(source:target:)`.
+	@_disfavoredOverload
 	@inlinable @inline(__always)
 	public init?(source: Element?, target: Element?) {
 		if let source, let target {
@@ -41,27 +94,7 @@ public enum Delta<Element> {
 		}
 	}
 	
-	@inlinable @inline(__always)
-	public init(source: Element?, target: Element) {
-		if let source {
-			self = .modified(source: source, target: target)
-		}
-		else {
-			self = .added(target: target)
-		}
-	}
-	
-	@_disfavoredOverload
-	@inlinable @inline(__always)
-	public init(source: Element, target: Element?) {
-		if let target {
-			self = .modified(source: source, target: target)
-		}
-		else {
-			self = .deleted(source: source)
-		}
-	}
-	
+	/// The source element, if the delta value is not of type `.added`.
 	@inlinable @inline(__always)
 	public var source: Element? {
 		switch self {
@@ -71,6 +104,7 @@ public enum Delta<Element> {
 		}
 	}
 	
+	/// The target element, if the delta value is not of type `.deleted`.
 	@inlinable @inline(__always)
 	public var target: Element? {
 		switch self {
@@ -118,7 +152,7 @@ public enum Delta<Element> {
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
-	/// In the `modified` case, `transform` is applied concurrently to both sides.
+	/// In the `.modified` case, `transform` is applied concurrently to both sides.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
@@ -138,7 +172,7 @@ public enum Delta<Element> {
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
-	/// In the `modified` case, `transform` is applied concurrently to both sides.
+	/// In the `.modified` case, `transform` is applied concurrently to both sides.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
@@ -156,6 +190,10 @@ public enum Delta<Element> {
 		}
 	}
 	
+	/// Returns a reduced view of the delta, favoring the given side.
+	/// 
+	/// If an element is available on the favored side, it is returned.
+	/// Otherwise, the element on the other side is returned.
 	@inlinable @inline(__always)
 	public func unified(favoring side: Side) -> Element {
 		switch side {

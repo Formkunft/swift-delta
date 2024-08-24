@@ -17,10 +17,12 @@
 //  limitations under the License.
 //
 
+/// A description of the two sides of a delta value.
 public enum DeltaSide: Hashable, Sendable {
 	case source
 	case target
 	
+	/// The opposite side.
 	public var opposite: Self {
 		switch self {
 		case .source:
