@@ -37,6 +37,12 @@ public enum Delta<Element> {
 	/// The source and target elements can be different or equal.
 	case modified(source: Element, target: Element)
 	
+	/// Returns a modified delta where both the source and target share the same element.
+	@inlinable @inline(__always)
+	public static func equal(_ element: Element) -> Self {
+		.modified(source: element, target: element)
+	}
+	
 	/// Creates a modified delta from a source and a target element.
 	@inlinable @inline(__always)
 	public init(source: Element, target: Element) {
