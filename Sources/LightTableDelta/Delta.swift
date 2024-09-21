@@ -23,6 +23,11 @@ public enum Delta<Element> {
 	public typealias Element = Element
 	public typealias Side = DeltaSide
 	
+	enum CodingKeys: String, CodingKey {
+		case source = "A"
+		case target = "B"
+	}
+	
 	/// A source element.
 	///
 	/// Conceptually, this is a value that was deleted and thus no target element is available.
@@ -238,8 +243,47 @@ public enum Delta<Element> {
 }
 
 extension Delta: Equatable where Element: Equatable {}
+
 extension Delta: Hashable where Element: Hashable {}
-extension Delta: Encodable where Element: Encodable {}
-extension Delta: Decodable where Element: Decodable {}
+
+extension Delta: Encodable where Element: Encodable {
+	public func encode(to encoder: any Encoder) throws {
+		switch self {
+		case .deleted(let source):
+			var container = encoder.container(keyedBy: CodingKeys.self)
+			try container.encode(source, forKey: .source)
+		case .added(let target):
+			var container = encoder.container(keyedBy: CodingKeys.self)
+			try container.encode(target, forKey: .target)
+		case .modified(let source, let target):
+			var container = encoder.container(keyedBy: CodingKeys.self)
+			try container.encode(source, forKey: .source)
+			try container.encode(target, forKey: .target)
+		}
+	}
+}
+
+extension Delta: Decodable where Element: Decodable {
+	public init(from decoder: any Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		let source = try container.decodeIfPresent(Element.self, forKey: .source)
+		let target = try container.decodeIfPresent(Element.self, forKey: .target)
+		
+		if let source, let target {
+			self = .modified(source: source, target: target)
+		}
+		else if let source {
+			self = .deleted(source: source)
+		}
+		else if let target {
+			self = .added(target: target)
+		}
+		else {
+			throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "No source or target value."))
+		}
+	}
+}
+
 extension Delta: Sendable where Element: Sendable {}
+
 extension Delta: BitwiseCopyable where Element: BitwiseCopyable {}
