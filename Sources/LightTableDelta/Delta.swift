@@ -53,7 +53,7 @@ public enum Delta<Element> {
 	/// 
 	/// If the source element is `nil`, the delta is `.added(target:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
-	@inlinable @inline(__always)
+	@inlinable
 	public init(source: Element?, target: Element) {
 		if let source {
 			self = .modified(source: source, target: target)
@@ -67,7 +67,7 @@ public enum Delta<Element> {
 	/// 
 	/// If the target element is `nil`, the delta is `.deleted(source:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
-	@inlinable @inline(__always)
+	@inlinable
 	public init(source: Element, target: Element?) {
 		if let target {
 			self = .modified(source: source, target: target)
@@ -83,8 +83,7 @@ public enum Delta<Element> {
 	/// If the source element is `nil`, the delta is `.added(target:)`.
 	/// If the target element is `nil`, the delta is `.deleted(source:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
-	@_disfavoredOverload
-	@inlinable @inline(__always)
+	@inlinable
 	public init?(source: Element?, target: Element?) {
 		if let source, let target {
 			self = .modified(source: source, target: target)
@@ -200,7 +199,7 @@ public enum Delta<Element> {
 	/// 
 	/// If an element is available on the favored side, it is returned.
 	/// Otherwise, the element on the other side is returned.
-	@inlinable @inline(__always)
+	@inlinable
 	public func unified(favoring side: Side) -> Element {
 		switch side {
 		case .source:
