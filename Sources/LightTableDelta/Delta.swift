@@ -24,15 +24,15 @@ public enum Delta<Element> {
 	public typealias Side = DeltaSide
 	
 	/// A source element.
-	/// 
+	///
 	/// Conceptually, this is a value that was deleted and thus no target element is available.
 	case deleted(source: Element)
 	/// A target element.
-	/// 
+	///
 	/// Conceptually, this is a value that was added and thus no source element is available.
 	case added(target: Element)
 	/// A source element and a target element.
-	/// 
+	///
 	/// Conceptually, this is a value that was modified and both the source and the target element are available.
 	/// The source and target elements can be different or equal.
 	case modified(source: Element, target: Element)
@@ -50,7 +50,7 @@ public enum Delta<Element> {
 	}
 	
 	/// Creates a delta from a source and a target element.
-	/// 
+	///
 	/// If the source element is `nil`, the delta is `.added(target:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
 	@inlinable
@@ -64,7 +64,7 @@ public enum Delta<Element> {
 	}
 	
 	/// Creates a delta from a source and a target element.
-	/// 
+	///
 	/// If the target element is `nil`, the delta is `.deleted(source:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
 	@inlinable
@@ -78,7 +78,7 @@ public enum Delta<Element> {
 	}
 	
 	/// Creates a delta from a source and a target element.
-	/// 
+	///
 	/// If both the source and the target element are `nil`, the delta is `nil`.
 	/// If the source element is `nil`, the delta is `.added(target:)`.
 	/// If the target element is `nil`, the delta is `.deleted(source:)`.
@@ -124,11 +124,11 @@ public enum Delta<Element> {
 	public func map<T>(_ transform: (Element) throws -> T) rethrows -> Delta<T> {
 		switch self {
 		case .deleted(let source):
-				.deleted(source: try transform(source))
+			.deleted(source: try transform(source))
 		case .added(let target):
-				.added(target: try transform(target))
+			.added(target: try transform(target))
 		case .modified(let source, let target):
-				.modified(source: try transform(source), target: try transform(target))
+			.modified(source: try transform(source), target: try transform(target))
 		}
 	}
 	
@@ -196,7 +196,7 @@ public enum Delta<Element> {
 	}
 	
 	/// Returns a reduced view of the delta, favoring the given side.
-	/// 
+	///
 	/// If an element is available on the favored side, it is returned.
 	/// Otherwise, the element on the other side is returned.
 	@inlinable
