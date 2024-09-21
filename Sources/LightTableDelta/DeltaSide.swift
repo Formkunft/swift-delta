@@ -1,6 +1,6 @@
 //
 //  DeltaSide.swift
-//  Light Table
+//  LightTableDelta
 //
 //  Copyright 2024 Florian Pircher
 //
