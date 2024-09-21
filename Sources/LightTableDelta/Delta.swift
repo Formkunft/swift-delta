@@ -220,6 +220,21 @@ public enum Delta<Element> {
 			}
 		}
 	}
+	
+	/// Returns the combined value of the source and target element, if modified, otherwise returns the source or target value.
+	@inlinable
+	public func reduce<E>(
+		combine: (Element, Element) throws(E) -> Element
+	) throws(E) -> Element {
+		switch self {
+		case .deleted(let source):
+			source
+		case .added(let target):
+			target
+		case .modified(let source, let target):
+			try combine(source, target)
+		}
+	}
 }
 
 extension Delta: Equatable where Element: Equatable {}
