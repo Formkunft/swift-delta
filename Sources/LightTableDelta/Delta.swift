@@ -121,7 +121,9 @@ public enum Delta<Element> {
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
-	public func map<T>(_ transform: (Element) throws -> T) rethrows -> Delta<T> {
+	public func map<T, E>(
+		_ transform: (Element) throws(E) -> T
+	) throws(E) -> Delta<T> {
 		switch self {
 		case .deleted(let source):
 			.deleted(source: try transform(source))
@@ -134,7 +136,9 @@ public enum Delta<Element> {
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
 	@inlinable
-	public func flatMap<T>(_ transform: (Element) throws -> T?) rethrows -> Delta<T>? {
+	public func flatMap<T, E>(
+		_ transform: (Element) throws(E) -> T?
+	) throws(E) -> Delta<T>? {
 		switch self {
 		case .deleted(let source):
 			guard let source = try transform(source) else {
