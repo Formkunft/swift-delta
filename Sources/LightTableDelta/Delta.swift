@@ -227,3 +227,4 @@ extension Delta: Hashable where Element: Hashable {}
 extension Delta: Encodable where Element: Encodable {}
 extension Delta: Decodable where Element: Decodable {}
 extension Delta: Sendable where Element: Sendable {}
+extension Delta: BitwiseCopyable where Element: BitwiseCopyable {}
