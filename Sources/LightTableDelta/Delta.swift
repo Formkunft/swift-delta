@@ -130,12 +130,11 @@ public extension Delta where Element: ~Copyable {
 		}
 	}
 	
-	/// Returns a reduced view of the delta, favoring the given side.
+	/// Resolves the delta to a single element, favoring the element on the given side.
 	///
-	/// If an element is available on the favored side, it is returned.
-	/// Otherwise, the element on the other side is returned.
+	/// If the favored element is not available, the other element is returned.
 	@inlinable
-	consuming func unified(favoring side: Side) -> Element {
+	consuming func resolve(favoring side: Side) -> Element {
 		switch side {
 		case .source:
 			switch consume self {
@@ -152,10 +151,10 @@ public extension Delta where Element: ~Copyable {
 		}
 	}
 	
-	/// Returns the combined value of the source and target element, if modified, otherwise returns the source or target value.
+	/// Resolves the delta to a single element, coalescing the source and target elements in the transition case.
 	@inlinable
-	consuming func reduce<E>(
-		combine: (consuming Element, consuming Element) throws(E) -> Element
+	consuming func merge<E>(
+		coalesce: (consuming Element, consuming Element) throws(E) -> Element
 	) throws(E) -> Element {
 		switch consume self {
 		case .source(let source):
@@ -163,7 +162,7 @@ public extension Delta where Element: ~Copyable {
 		case .target(let target):
 			target
 		case .transition(let source, let target):
-			try combine(source, target)
+			try coalesce(source, target)
 		}
 	}
 }
