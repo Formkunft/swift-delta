@@ -25,71 +25,63 @@ public enum Delta<Element>: ~Copyable where Element: ~Copyable {
 	
 	/// A source element.
 	///
-	/// Conceptually, this is a value that was deleted and thus no target element is available.
-	case deleted(source: Element)
+	/// Conceptually, this case represents a value where the element was deleted and thus no target element is available.
+	case source(Element)
 	/// A target element.
 	///
-	/// Conceptually, this is a value that was added and thus no source element is available.
-	case added(target: Element)
-	/// A source element and a target element.
+	/// Conceptually, this case represents a value where the element was added and thus no source element is available.
+	case target(Element)
+	/// The combination of a source element and a target element.
 	///
-	/// Conceptually, this is a value that was modified and both the source and the target element are available.
-	/// The source and target elements can be different or equal.
-	case modified(source: Element, target: Element)
+	/// Conceptually, this case represents a value where an element was modified or kept the same and thus both a source and a target element are available.
+	case transition(source: Element, target: Element)
 }
 
 public extension Delta where Element: ~Copyable {
-	/// Creates a modified delta from a source and a target element.
+	/// Creates a transition delta.
 	@inlinable @inline(__always)
 	init(source: consuming Element, target: consuming Element) {
 		self = .transition(source: source, target: target)
 	}
 	
-	/// Creates a delta from a source and a target element.
-	///
-	/// If the source element is `nil`, the delta is `.added(target:)`.
-	/// Otherwise, the delta is `.modified(source:target:)`.
+	/// Creates a target delta if `source` is `nil`; otherwise, creates a transition delta.
 	@inlinable
 	init(source: consuming Element?, target: consuming Element) {
 		if let source {
-			self = .modified(source: source, target: target)
+			self = .transition(source: source, target: target)
 		}
 		else {
-			self = .added(target: target)
+			self = .target(target)
 		}
 	}
 	
-	/// Creates a delta from a source and a target element.
-	///
-	/// If the target element is `nil`, the delta is `.deleted(source:)`.
-	/// Otherwise, the delta is `.modified(source:target:)`.
+	/// Creates a source delta if `target` is `nil`; otherwise, creates a transition delta.
 	@inlinable
 	init(source: consuming Element, target: consuming Element?) {
 		if let target {
-			self = .modified(source: source, target: target)
+			self = .transition(source: source, target: target)
 		}
 		else {
-			self = .deleted(source: source)
+			self = .source(source)
 		}
 	}
 	
-	/// Creates a delta from a source and a target element.
+	/// Creates a delta when one or both elements are non-`nil`; otherwise, returns `nil`.
 	///
-	/// If both the source and the target element are `nil`, the delta is `nil`.
-	/// If the source element is `nil`, the delta is `.added(target:)`.
-	/// If the target element is `nil`, the delta is `.deleted(source:)`.
-	/// Otherwise, the delta is `.modified(source:target:)`.
+	/// - If both the source and target are non-`nil`, creates a transition delta.
+	/// - Else, if the source is non-`nil`, creates a source delta.
+	/// - Else, if the target is non-`nil`, creates a target delta.
+	/// - Otherwise, returns `nil`.
 	@inlinable
 	init?(source: consuming Element?, target: consuming Element?) {
-		if source != nil && target != nil {
-			// `if let source, let target` does not work with non-copyable types here
-			self = .modified(source: source!, target: target!)
+		if let source = source.take(), let target = target.take() {
+			self = .transition(source: source, target: target)
 		}
 		else if let source {
-			self = .deleted(source: source)
+			self = .source(source)
 		}
 		else if let target {
-			self = .added(target: target)
+			self = .target(target)
 		}
 		else {
 			return nil
@@ -104,12 +96,12 @@ public extension Delta where Element: ~Copyable {
 		_ transform: (consuming Element) throws(E) -> T
 	) throws(E) -> Delta<T> {
 		switch consume self {
-		case .deleted(let source):
-			.deleted(source: try transform(source))
-		case .added(let target):
-			.added(target: try transform(target))
-		case .modified(let source, let target):
-			.modified(source: try transform(source), target: try transform(target))
+		case .source(let source):
+			.source(try transform(source))
+		case .target(let target):
+			.target(try transform(target))
+		case .transition(let source, let target):
+			.transition(source: try transform(source), target: try transform(target))
 		}
 	}
 	
@@ -119,22 +111,22 @@ public extension Delta where Element: ~Copyable {
 		_ transform: (consuming Element) throws(E) -> T?
 	) throws(E) -> Delta<T>? {
 		switch consume self {
-		case .deleted(let source):
+		case .source(let source):
 			guard let source = try transform(source) else {
 				return nil
 			}
-			return .deleted(source: source)
-		case .added(let target):
+			return .source(source)
+		case .target(let target):
 			guard let target = try transform(target) else {
 				return nil
 			}
-			return .added(target: target)
-		case .modified(let source, let target):
+			return .target(target)
+		case .transition(let source, let target):
 			guard let source = try transform(source),
 			      let target = try transform(target) else {
 				return nil
 			}
-			return .modified(source: source, target: target)
+			return .transition(source: source, target: target)
 		}
 	}
 	
@@ -147,15 +139,15 @@ public extension Delta where Element: ~Copyable {
 		switch side {
 		case .source:
 			switch consume self {
-			case .deleted(let source): source
-			case .added(let target): target
-			case .modified(let source, _): source
+			case .source(let source): source
+			case .target(let target): target
+			case .transition(let source, _): source
 			}
 		case .target:
 			switch consume self {
-			case .deleted(let source): source
-			case .added(let target): target
-			case .modified(_, let target): target
+			case .source(let source): source
+			case .target(let target): target
+			case .transition(_, let target): target
 			}
 		}
 	}
@@ -166,80 +158,80 @@ public extension Delta where Element: ~Copyable {
 		combine: (consuming Element, consuming Element) throws(E) -> Element
 	) throws(E) -> Element {
 		switch consume self {
-		case .deleted(let source):
+		case .source(let source):
 			source
-		case .added(let target):
+		case .target(let target):
 			target
-		case .modified(let source, let target):
+		case .transition(let source, let target):
 			try combine(source, target)
 		}
 	}
 }
 
 extension Delta: Copyable where Element: Copyable {
-	/// Returns a modified delta where both the source and target share the same element.
+	/// Returns a transition delta where both the source and target share the same element.
 	@inlinable @inline(__always)
-	public static func equal(_ element: Element) -> Self {
-		.modified(source: element, target: element)
+	public static func transition(_ element: Element) -> Self {
+		.transition(source: element, target: element)
 	}
 	
-	/// The source element, if the delta value is not of type `.added`.
+	/// The source element, if available; otherwise, `nil`.
 	@inlinable @inline(__always)
 	public var source: Element? {
 		switch self {
-		case .deleted(let source): source
-		case .added(_): nil
-		case .modified(let source, _): source
+		case .source(let source): source
+		case .target(_): nil
+		case .transition(let source, _): source
 		}
 	}
 	
-	/// The target element, if the delta value is not of type `.deleted`.
+	/// The target element, if available; otherwise, `nil`.
 	@inlinable @inline(__always)
 	public var target: Element? {
 		switch self {
-		case .deleted(_): nil
-		case .added(let target): target
-		case .modified(_, let target): target
+		case .source(_): nil
+		case .target(let target): target
+		case .transition(_, let target): target
 		}
 	}
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
-	/// In the `.modified` case, `transform` is applied concurrently to both sides.
+	/// In the transition case, both elements are transformed concurrently.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
-		_ transform: @Sendable (consuming Element) async -> T
+		_ transform: @Sendable (Element) async -> T
 	) async -> Delta<T> where Element: Sendable {
 		switch self {
-		case .deleted(let source):
-			return .deleted(source: await transform(source))
-		case .added(let target):
-			return .added(target: await transform(target))
-		case .modified(let source, let target):
+		case .source(let source):
+			return .source(await transform(source))
+		case .target(let target):
+			return .target(await transform(target))
+		case .transition(let source, let target):
 			async let transformedSource = transform(source)
 			async let transformedTarget = transform(target)
-			return await .modified(source: transformedSource, target: transformedTarget)
+			return await .transition(source: transformedSource, target: transformedTarget)
 		}
 	}
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
-	/// In the `.modified` case, `transform` is applied concurrently to both sides.
+	/// In the transition case, both elements are transformed concurrently.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
-		_ transform: @Sendable (consuming Element) async throws -> T
+		_ transform: @Sendable (Element) async throws -> T
 	) async throws -> Delta<T> where Element: Sendable {
 		switch self {
-		case .deleted(let source):
-			return .deleted(source: try await transform(source))
-		case .added(let target):
-			return .added(target: try await transform(target))
-		case .modified(let source, let target):
+		case .source(let source):
+			return .source(try await transform(source))
+		case .target(let target):
+			return .target(try await transform(target))
+		case .transition(let source, let target):
 			async let transformedSource = transform(source)
 			async let transformedTarget = transform(target)
-			return try await .modified(source: transformedSource, target: transformedTarget)
+			return try await .transition(source: transformedSource, target: transformedTarget)
 		}
 	}
 }
@@ -247,12 +239,12 @@ extension Delta: Copyable where Element: Copyable {
 extension Delta: CustomDebugStringConvertible {
 	public var debugDescription: String {
 		switch self {
-		case .deleted(let source):
-			"Delta.deleted(\(source))"
-		case .added(let target):
-			"Delta.added(\(target))"
-		case .modified(let source, let target):
-			"Delta.modified(\(source), \(target))"
+		case .source(let source):
+			"Delta(source: \(source))"
+		case .target(let target):
+			"Delta(target: \(target))"
+		case .transition(let source, let target):
+			"Delta(source: \(source), target: \(target))"
 		}
 	}
 }
@@ -271,13 +263,13 @@ public extension Delta where Element: ~Copyable {
 extension Delta: Encodable where Element: Encodable {
 	public func encode(to encoder: any Encoder) throws {
 		switch self {
-		case .deleted(let source):
+		case .source(let source):
 			var container = encoder.container(keyedBy: CodingKeys.self)
 			try container.encode(source, forKey: .source)
-		case .added(let target):
+		case .target(let target):
 			var container = encoder.container(keyedBy: CodingKeys.self)
 			try container.encode(target, forKey: .target)
-		case .modified(let source, let target):
+		case .transition(let source, let target):
 			var container = encoder.container(keyedBy: CodingKeys.self)
 			try container.encode(source, forKey: .source)
 			try container.encode(target, forKey: .target)
@@ -292,13 +284,13 @@ extension Delta: Decodable where Element: Decodable {
 		let target = try container.decodeIfPresent(Element.self, forKey: .target)
 		
 		if let source, let target {
-			self = .modified(source: source, target: target)
+			self = .transition(source: source, target: target)
 		}
 		else if let source {
-			self = .deleted(source: source)
+			self = .source(source)
 		}
 		else if let target {
-			self = .added(target: target)
+			self = .target(target)
 		}
 		else {
 			throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "No source or target value."))
