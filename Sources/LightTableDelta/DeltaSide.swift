@@ -18,7 +18,7 @@
 //
 
 /// A description of the two sides of a delta value.
-public enum DeltaSide: Hashable, Sendable {
+public enum DeltaSide: Hashable, Sendable, BitwiseCopyable, CustomStringConvertible {
 	case source
 	case target
 	
@@ -29,6 +29,13 @@ public enum DeltaSide: Hashable, Sendable {
 			.target
 		case .target:
 			.source
+		}
+	}
+	
+	public var description: String {
+		switch self {
+		case .source: "source"
+		case .target: "target"
 		}
 	}
 }

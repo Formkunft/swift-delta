@@ -18,15 +18,10 @@
 //
 
 /// A type representing a source element, a target element, or both a source and a target element.
-public enum Delta<Element> {
+public enum Delta<Element>: ~Copyable where Element: ~Copyable {
 	/// The type of the elements.
 	public typealias Element = Element
 	public typealias Side = DeltaSide
-	
-	enum CodingKeys: String, CodingKey {
-		case source = "A"
-		case target = "B"
-	}
 	
 	/// A source element.
 	///
@@ -41,17 +36,13 @@ public enum Delta<Element> {
 	/// Conceptually, this is a value that was modified and both the source and the target element are available.
 	/// The source and target elements can be different or equal.
 	case modified(source: Element, target: Element)
-	
-	/// Returns a modified delta where both the source and target share the same element.
-	@inlinable @inline(__always)
-	public static func equal(_ element: Element) -> Self {
-		.modified(source: element, target: element)
-	}
-	
+}
+
+public extension Delta where Element: ~Copyable {
 	/// Creates a modified delta from a source and a target element.
 	@inlinable @inline(__always)
-	public init(source: Element, target: Element) {
-		self = .modified(source: source, target: target)
+	init(source: consuming Element, target: consuming Element) {
+		self = .transition(source: source, target: target)
 	}
 	
 	/// Creates a delta from a source and a target element.
@@ -59,7 +50,7 @@ public enum Delta<Element> {
 	/// If the source element is `nil`, the delta is `.added(target:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
 	@inlinable
-	public init(source: Element?, target: Element) {
+	init(source: consuming Element?, target: consuming Element) {
 		if let source {
 			self = .modified(source: source, target: target)
 		}
@@ -73,7 +64,7 @@ public enum Delta<Element> {
 	/// If the target element is `nil`, the delta is `.deleted(source:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
 	@inlinable
-	public init(source: Element, target: Element?) {
+	init(source: consuming Element, target: consuming Element?) {
 		if let target {
 			self = .modified(source: source, target: target)
 		}
@@ -89,9 +80,10 @@ public enum Delta<Element> {
 	/// If the target element is `nil`, the delta is `.deleted(source:)`.
 	/// Otherwise, the delta is `.modified(source:target:)`.
 	@inlinable
-	public init?(source: Element?, target: Element?) {
-		if let source, let target {
-			self = .modified(source: source, target: target)
+	init?(source: consuming Element?, target: consuming Element?) {
+		if source != nil && target != nil {
+			// `if let source, let target` does not work with non-copyable types here
+			self = .modified(source: source!, target: target!)
 		}
 		else if let source {
 			self = .deleted(source: source)
@@ -102,6 +94,93 @@ public enum Delta<Element> {
 		else {
 			return nil
 		}
+	}
+}
+
+public extension Delta where Element: ~Copyable {
+	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
+	@inlinable
+	consuming func map<T: ~Copyable, E>(
+		_ transform: (consuming Element) throws(E) -> T
+	) throws(E) -> Delta<T> {
+		switch consume self {
+		case .deleted(let source):
+			.deleted(source: try transform(source))
+		case .added(let target):
+			.added(target: try transform(target))
+		case .modified(let source, let target):
+			.modified(source: try transform(source), target: try transform(target))
+		}
+	}
+	
+	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
+	@inlinable
+	consuming func compactMap<T: ~Copyable, E>(
+		_ transform: (consuming Element) throws(E) -> T?
+	) throws(E) -> Delta<T>? {
+		switch consume self {
+		case .deleted(let source):
+			guard let source = try transform(source) else {
+				return nil
+			}
+			return .deleted(source: source)
+		case .added(let target):
+			guard let target = try transform(target) else {
+				return nil
+			}
+			return .added(target: target)
+		case .modified(let source, let target):
+			guard let source = try transform(source),
+			      let target = try transform(target) else {
+				return nil
+			}
+			return .modified(source: source, target: target)
+		}
+	}
+	
+	/// Returns a reduced view of the delta, favoring the given side.
+	///
+	/// If an element is available on the favored side, it is returned.
+	/// Otherwise, the element on the other side is returned.
+	@inlinable
+	consuming func unified(favoring side: Side) -> Element {
+		switch side {
+		case .source:
+			switch consume self {
+			case .deleted(let source): source
+			case .added(let target): target
+			case .modified(let source, _): source
+			}
+		case .target:
+			switch consume self {
+			case .deleted(let source): source
+			case .added(let target): target
+			case .modified(_, let target): target
+			}
+		}
+	}
+	
+	/// Returns the combined value of the source and target element, if modified, otherwise returns the source or target value.
+	@inlinable
+	consuming func reduce<E>(
+		combine: (consuming Element, consuming Element) throws(E) -> Element
+	) throws(E) -> Element {
+		switch consume self {
+		case .deleted(let source):
+			source
+		case .added(let target):
+			target
+		case .modified(let source, let target):
+			try combine(source, target)
+		}
+	}
+}
+
+extension Delta: Copyable where Element: Copyable {
+	/// Returns a modified delta where both the source and target share the same element.
+	@inlinable @inline(__always)
+	public static func equal(_ element: Element) -> Self {
+		.modified(source: element, target: element)
 	}
 	
 	/// The source element, if the delta value is not of type `.added`.
@@ -125,52 +204,12 @@ public enum Delta<Element> {
 	}
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
-	@inlinable
-	public func map<T, E>(
-		_ transform: (Element) throws(E) -> T
-	) throws(E) -> Delta<T> {
-		switch self {
-		case .deleted(let source):
-			.deleted(source: try transform(source))
-		case .added(let target):
-			.added(target: try transform(target))
-		case .modified(let source, let target):
-			.modified(source: try transform(source), target: try transform(target))
-		}
-	}
-	
-	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
-	@inlinable
-	public func flatMap<T, E>(
-		_ transform: (Element) throws(E) -> T?
-	) throws(E) -> Delta<T>? {
-		switch self {
-		case .deleted(let source):
-			guard let source = try transform(source) else {
-				return nil
-			}
-			return .deleted(source: source)
-		case .added(let target):
-			guard let target = try transform(target) else {
-				return nil
-			}
-			return .added(target: target)
-		case .modified(let source, let target):
-			guard let source = try transform(source),
-				  let target = try transform(target) else {
-				return nil
-			}
-			return .modified(source: source, target: target)
-		}
-	}
-	
-	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
 	/// In the `.modified` case, `transform` is applied concurrently to both sides.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
-		_ transform: @Sendable (Element) async -> T
+		_ transform: @Sendable (consuming Element) async -> T
 	) async -> Delta<T> where Element: Sendable {
 		switch self {
 		case .deleted(let source):
@@ -190,7 +229,7 @@ public enum Delta<Element> {
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<T>(
-		_ transform: @Sendable (Element) async throws -> T
+		_ transform: @Sendable (consuming Element) async throws -> T
 	) async throws -> Delta<T> where Element: Sendable {
 		switch self {
 		case .deleted(let source):
@@ -203,41 +242,17 @@ public enum Delta<Element> {
 			return try await .modified(source: transformedSource, target: transformedTarget)
 		}
 	}
-	
-	/// Returns a reduced view of the delta, favoring the given side.
-	///
-	/// If an element is available on the favored side, it is returned.
-	/// Otherwise, the element on the other side is returned.
-	@inlinable
-	public func unified(favoring side: Side) -> Element {
-		switch side {
-		case .source:
-			switch self {
-			case .deleted(let source): source
-			case .added(let target): target
-			case .modified(let source, _): source
-			}
-		case .target:
-			switch self {
-			case .deleted(let source): source
-			case .added(let target): target
-			case .modified(_, let target): target
-			}
-		}
-	}
-	
-	/// Returns the combined value of the source and target element, if modified, otherwise returns the source or target value.
-	@inlinable
-	public func reduce<E>(
-		combine: (Element, Element) throws(E) -> Element
-	) throws(E) -> Element {
+}
+
+extension Delta: CustomDebugStringConvertible {
+	public var debugDescription: String {
 		switch self {
 		case .deleted(let source):
-			source
+			"Delta.deleted(\(source))"
 		case .added(let target):
-			target
+			"Delta.added(\(target))"
 		case .modified(let source, let target):
-			try combine(source, target)
+			"Delta.modified(\(source), \(target))"
 		}
 	}
 }
@@ -245,6 +260,13 @@ public enum Delta<Element> {
 extension Delta: Equatable where Element: Equatable {}
 
 extension Delta: Hashable where Element: Hashable {}
+
+public extension Delta where Element: ~Copyable {
+	enum CodingKeys: String, CodingKey {
+		case source = "A"
+		case target = "B"
+	}
+}
 
 extension Delta: Encodable where Element: Encodable {
 	public func encode(to encoder: any Encoder) throws {
