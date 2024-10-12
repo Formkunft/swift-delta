@@ -165,6 +165,23 @@ public extension Delta where Element: ~Copyable {
 			try coalesce(source, target)
 		}
 	}
+	
+	/// Resolves the delta to a single element, coalescing the source and target elements in the transition case.
+	///
+	/// Returns `nil` when `coalesce` returns `nil`.
+	@inlinable
+	consuming func compactMerge<E>(
+		coalesce: (consuming Element, consuming Element) throws(E) -> Element?
+	) throws(E) -> Element? {
+		switch consume self {
+		case .source(let source):
+			source
+		case .target(let target):
+			target
+		case .transition(let source, let target):
+			try coalesce(source, target)
+		}
+	}
 }
 
 extension Delta: Copyable where Element: Copyable {
