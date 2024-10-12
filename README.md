@@ -2,12 +2,32 @@
 
 A Swift package for a type `Delta<Element>` with three cases:
 
-- `deleted(Element)`: A source element.
-- `added(Element)`: A target element.
-- `modified(Element, Element)`: Both source and target elements.
+- `source(Element)`
+- `target(Element)`
+- `transition(source: Element, target: Element)`
 
-Such a delta value is useful to represent an inclusive OR relation for the presence of a source and a target element.
-Either element (delta side) may be absent, but never both.
-In other languages, this type is also known as `These`.
+## Description
 
-The type also offers useful properties for accessing either side’s element as optionals, initializing a `Delta` from optionals, and mapping methods returning transformed delta values.
+This `Delta` represents an inclusive OR relation: Either a source element is available, or a target element is available, or both are available.
+`Delta` behaves similar to `Optional`, but instead of representing 0 or 1 elements, it represents 1 or 2 elements.
+An alternative name for this type in some other languages is `These`.
+
+## Implementation
+
+The source and target are described as the two sides of a delta.
+Both sides are accessible via optional `source` and `target` properties.
+Convenient methods like `resolve(favoring:)` and `merge(coalesce:)` also provide access to the elements.
+
+Transform a `Delta` value to different `Delta` value using `map(:)` or `asyncMap(:)`.
+
+`Delta` works well when working with optionals, providing initializers to create a `Delta` from optionals as well as alternative methods like `compactMap(:)` and `compactMerge(coalesce:)` to produce optionals.
+
+The `Delta` type also conforms to all standard protocols when it’s `Element` type does as well:
+
+- `Equatable`
+- `Hashable`
+- `Encodable`
+- `Decodable`
+- `Sendable`
+- `BitwiseCopyable`
+- `~Copyable`
