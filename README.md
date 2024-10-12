@@ -18,11 +18,11 @@ The source and target are described as the two sides of a delta.
 Both sides are accessible via optional `source` and `target` properties.
 Convenient methods like `resolve(favoring:)` and `merge(coalesce:)` also provide access to the elements.
 
-Transform a `Delta` value to different `Delta` value using `map(:)` or `asyncMap(:)`.
+Transform a `Delta` value to a different `Delta` value using `map(:)` or `asyncMap(:)`.
 
 `Delta` works well when working with optionals, providing initializers to create a `Delta` from optionals as well as alternative methods like `compactMap(:)` and `compactMerge(coalesce:)` to produce optionals.
 
-The `Delta` type also conforms to all standard protocols when it’s `Element` type does as well:
+The `Delta` type also conforms to all standard protocols (depending on the conformances of it’s `Element` type):
 
 - `Equatable`
 - `Hashable`
