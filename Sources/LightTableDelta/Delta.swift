@@ -74,8 +74,8 @@ public extension Delta where Element: ~Copyable {
 	/// - Otherwise, returns `nil`.
 	@inlinable
 	init?(source: consuming Element?, target: consuming Element?) {
-		if let source = source.take(), let target = target.take() {
-			self = .transition(source: source, target: target)
+		if source != nil && target != nil {
+			self = .transition(source: source!, target: target!)
 		}
 		else if let source {
 			self = .source(source)
