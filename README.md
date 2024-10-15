@@ -20,7 +20,7 @@ Convenient methods like `resolve(favoring:)` and `merge(coalesce:)` also provide
 
 Transform a `Delta` value to a different `Delta` value using `map(:)` or `asyncMap(:)`.
 
-`Delta` works well when working with optionals, providing initializers to create a `Delta` from optionals as well as alternative methods like `compactMap(:)` and `compactMerge(coalesce:)` to produce optionals.
+`Delta` works well when working with optionals, providing initializers to create a `Delta` from optionals as well as alternative methods like `flatMap(:)`, `compactMap(:)`, and `compactMerge(coalesce:)` to produce optionals.
 
 The `Delta` type also conforms to all standard protocols (depending on the conformances of it’s `Element` type):
 

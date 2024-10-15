@@ -105,7 +105,46 @@ public extension Delta where Element: ~Copyable {
 		}
 	}
 	
+	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
+	///
+	/// The notable difference to `compactMap(:)` is that this method does not return `nil` when `transform` returns `nil` for only one element in the `transition` case.
+	/// Instead, a `source` or `target` delta is returned, matching the non-`nil` return value.
+	@inlinable
+	consuming func flatMap<T: ~Copyable, E>(
+		_ transform: (consuming Element) throws(E) -> T?
+	) throws(E) -> Delta<T>? {
+		switch consume self {
+		case .source(let source):
+			guard let source = try transform(source) else {
+				return nil
+			}
+			return .source(source)
+		case .target(let target):
+			guard let target = try transform(target) else {
+				return nil
+			}
+			return .target(target)
+		case .transition(let source, let target):
+			let source = try transform(source)
+			let target = try transform(target)
+			return if source != nil && target != nil {
+				.transition(source: source!, target: target!)
+			}
+			else if let source {
+				.source(source)
+			}
+			else if let target {
+				.target(target)
+			}
+			else {
+				nil
+			}
+		}
+	}
+	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
+	///
+	/// The notable difference to `flatMap(:)` is that this method also returns `nil` when `transform` returns `nil` for only one element in the `transition` case.
 	@inlinable
 	consuming func compactMap<T: ~Copyable, E>(
 		_ transform: (consuming Element) throws(E) -> T?
