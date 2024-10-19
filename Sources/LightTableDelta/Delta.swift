@@ -144,7 +144,7 @@ public extension Delta where Element: ~Copyable {
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
 	///
-	/// The notable difference to `flatMap(:)` is that this method also returns `nil` when `transform` returns `nil` for only one element in the `transition` case.
+	/// The notable difference to `flatMap(:)` is that this method also returns `nil` when `transform` returns `nil` for only one of the two elements in the `transition` case.
 	@inlinable
 	consuming func compactMap<T: ~Copyable, E>(
 		_ transform: (consuming Element) throws(E) -> T?
