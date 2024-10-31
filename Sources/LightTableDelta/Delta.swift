@@ -298,6 +298,30 @@ extension Delta: Encodable where Element: Encodable {
 	}
 }
 
+#if canImport(Foundation)
+import Foundation
+
+@available(macOS 12, *)
+extension Delta: EncodableWithConfiguration where Element: EncodableWithConfiguration {
+	public typealias EncodingConfiguration = Element.EncodingConfiguration
+	
+	public func encode(to encoder: any Encoder, configuration: Element.EncodingConfiguration) throws {
+		switch self {
+		case .source(let source):
+			var container = encoder.container(keyedBy: CodingKeys.self)
+			try container.encode(source, forKey: .source, configuration: configuration)
+		case .target(let target):
+			var container = encoder.container(keyedBy: CodingKeys.self)
+			try container.encode(target, forKey: .target, configuration: configuration)
+		case .transition(let source, let target):
+			var container = encoder.container(keyedBy: CodingKeys.self)
+			try container.encode(source, forKey: .source, configuration: configuration)
+			try container.encode(target, forKey: .target, configuration: configuration)
+		}
+	}
+}
+#endif
+
 extension Delta: Decodable where Element: Decodable {
 	public init(from decoder: any Decoder) throws {
 		let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -318,6 +342,34 @@ extension Delta: Decodable where Element: Decodable {
 		}
 	}
 }
+
+#if canImport(Foundation)
+import Foundation
+
+@available(macOS 12, *)
+extension Delta: DecodableWithConfiguration where Element: DecodableWithConfiguration {
+	public typealias DecodingConfiguration = Element.DecodingConfiguration
+	
+	public init(from decoder: any Decoder, configuration: Element.DecodingConfiguration) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		let source = try container.decodeIfPresent(Element.self, forKey: .source, configuration: configuration)
+		let target = try container.decodeIfPresent(Element.self, forKey: .target, configuration: configuration)
+		
+		if let source, let target {
+			self = .transition(source: source, target: target)
+		}
+		else if let source {
+			self = .source(source)
+		}
+		else if let target {
+			self = .target(target)
+		}
+		else {
+			throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "No source or target value."))
+		}
+	}
+}
+#endif
 
 extension Delta: Sendable where Element: Sendable {}
 

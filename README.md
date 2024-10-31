@@ -25,7 +25,9 @@ The `Delta` type also conforms to all standard protocols (depending on the confo
 - `Hashable`
 - `CustomDebugStringConvertible`
 - `Encodable`
+- `EncodableWithConfiguration`
 - `Decodable`
+- `DecodableWithConfiguration`
 - `Sendable`
 - `BitwiseCopyable`
 - `~Copyable`
