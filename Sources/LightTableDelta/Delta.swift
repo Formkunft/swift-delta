@@ -257,6 +257,10 @@ extension Delta: Copyable where Element: Copyable {
 	}
 }
 
+extension Delta: Equatable where Element: Equatable {}
+
+extension Delta: Hashable where Element: Hashable {}
+
 extension Delta: CustomDebugStringConvertible {
 	public var debugDescription: String {
 		switch self {
@@ -269,10 +273,6 @@ extension Delta: CustomDebugStringConvertible {
 		}
 	}
 }
-
-extension Delta: Equatable where Element: Equatable {}
-
-extension Delta: Hashable where Element: Hashable {}
 
 public extension Delta where Element: ~Copyable {
 	enum CodingKeys: String, CodingKey {

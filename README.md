@@ -23,6 +23,7 @@ The `Delta` type also conforms to all standard protocols (depending on the confo
 
 - `Equatable`
 - `Hashable`
+- `CustomDebugStringConvertible`
 - `Encodable`
 - `Decodable`
 - `Sendable`
