@@ -92,7 +92,7 @@ public extension Delta where Element: ~Copyable {
 public extension Delta where Element: ~Copyable {
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
-	consuming func map<T: ~Copyable, E>(
+	consuming func map<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T
 	) throws(E) -> Delta<T> {
 		switch consume self {
@@ -106,11 +106,8 @@ public extension Delta where Element: ~Copyable {
 	}
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
-	///
-	/// The notable difference to `compactMap(:)` is that this method does not return `nil` when `transform` returns `nil` for only one element in the `transition` case.
-	/// Instead, a `source` or `target` delta is returned, matching the non-`nil` return value.
 	@inlinable
-	consuming func flatMap<T: ~Copyable, E>(
+	consuming func mapAny<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T?
 	) throws(E) -> Delta<T>? {
 		switch consume self {
@@ -143,10 +140,8 @@ public extension Delta where Element: ~Copyable {
 	}
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
-	///
-	/// The notable difference to `flatMap(:)` is that this method also returns `nil` when `transform` returns `nil` for only one of the two elements in the `transition` case.
 	@inlinable
-	consuming func compactMap<T: ~Copyable, E>(
+	consuming func mapAll<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T?
 	) throws(E) -> Delta<T>? {
 		switch consume self {
@@ -204,23 +199,6 @@ public extension Delta where Element: ~Copyable {
 			try coalesce(source, target)
 		}
 	}
-	
-	/// Resolves the delta to a single element, coalescing the source and target elements in the transition case.
-	///
-	/// Returns `nil` when `coalesce` returns `nil`.
-	@inlinable
-	consuming func compactMerge<E>(
-		coalesce: (consuming Element, consuming Element) throws(E) -> Element?
-	) throws(E) -> Element? {
-		switch consume self {
-		case .source(let source):
-			source
-		case .target(let target):
-			target
-		case .transition(let source, let target):
-			try coalesce(source, target)
-		}
-	}
 }
 
 extension Delta: Copyable where Element: Copyable {
@@ -255,38 +233,26 @@ extension Delta: Copyable where Element: Copyable {
 	/// In the transition case, both elements are transformed concurrently.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
-	public func asyncMap<T>(
-		_ transform: @Sendable (Element) async -> T
-	) async -> Delta<T> where Element: Sendable {
-		switch self {
-		case .source(let source):
-			return .source(await transform(source))
-		case .target(let target):
-			return .target(await transform(target))
-		case .transition(let source, let target):
-			async let transformedSource = transform(source)
-			async let transformedTarget = transform(target)
-			return await .transition(source: transformedSource, target: transformedTarget)
-		}
-	}
-	
-	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
-	///
-	/// In the transition case, both elements are transformed concurrently.
-	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
-	@inlinable
-	public func asyncMap<T>(
-		_ transform: @Sendable (Element) async throws -> T
-	) async throws -> Delta<T> where Element: Sendable {
+	public func asyncMap<E, T>(
+		_ transform: @Sendable (Element) async throws(E) -> T
+	) async throws(E) -> Delta<T> where Element: Sendable {
 		switch self {
 		case .source(let source):
 			return .source(try await transform(source))
 		case .target(let target):
 			return .target(try await transform(target))
 		case .transition(let source, let target):
-			async let transformedSource = transform(source)
-			async let transformedTarget = transform(target)
-			return try await .transition(source: transformedSource, target: transformedTarget)
+			do {
+				async let transformedSource = transform(source)
+				async let transformedTarget = transform(target)
+				return try await .transition(source: transformedSource, target: transformedTarget)
+			}
+			catch let error as E {
+				throw error
+			}
+			catch {
+				preconditionFailure()
+			}
 		}
 	}
 }

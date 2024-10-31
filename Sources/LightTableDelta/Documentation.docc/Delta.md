@@ -25,12 +25,10 @@
 
 - ``resolve(favoring:)``
 - ``merge(coalesce:)``
-- ``compactMerge(coalesce:)``
 
 ### Mapping
 
 - ``map(_:)``
-- ``asyncMap(_:)-7xloe``
-- ``asyncMap(_:)-8m2xi``
-- ``flatMap(_:)``
-- ``compactMap(_:)``
+- ``asyncMap(_:)``
+- ``mapAny(_:)``
+- ``mapAll(_:)``
