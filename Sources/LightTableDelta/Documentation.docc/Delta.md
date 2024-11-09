@@ -7,7 +7,6 @@
 - ``source(_:)``
 - ``target(_:)``
 - ``transition(source:target:)``
-- ``transition(_:)``
 
 ### Initializers
 
@@ -32,3 +31,7 @@
 - ``asyncMap(_:)``
 - ``mapAny(_:)``
 - ``mapAll(_:)``
+
+### Identity Delta
+
+- ``identity(_:)``

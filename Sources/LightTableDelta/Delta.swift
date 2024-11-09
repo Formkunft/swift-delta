@@ -204,7 +204,7 @@ extension Delta where Element: ~Copyable {
 extension Delta: Copyable where Element: Copyable {
 	/// Returns a transition delta where both the source and target share the same element.
 	@inlinable @inline(__always)
-	public static func transition(_ element: Element) -> Self {
+	public static func identity(_ element: Element) -> Self {
 		.transition(source: element, target: element)
 	}
 	
