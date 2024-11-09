@@ -488,7 +488,7 @@ public struct DeltaIterator<T>: IteratorProtocol {
 	}
 }
 
-extension Delta: Collection {
+extension Delta: RandomAccessCollection {
 	public struct Index: Comparable {
 		@usableFromInline
 		enum Step: Comparable {
@@ -594,7 +594,36 @@ extension Delta: Collection {
 	}
 	
 	@inlinable
+	public func index(before i: Index) -> Index {
+		switch self {
+		case .source(_):
+			guard i.step == .target else {
+				preconditionFailure("invalid index")
+			}
+			return Index(step: .source)
+		case .target(_):
+			guard i.step == .sentinel else {
+				preconditionFailure("invalid index")
+			}
+			return Index(step: .target)
+		case .transition(source: _, target: _):
+			switch i.step {
+			case .source: preconditionFailure("invalid index")
+			case .target: return Index(step: .source)
+			case .sentinel: return Index(step: .target)
+			}
+		}
+	}
+	
+	/// The source element, if available; otherwise, the target element.
+	@inlinable
 	public var first: Element {
 		self.resolve(favoring: .source)
+	}
+	
+	/// The target element, if available; otherwise, the source element.
+	@inlinable
+	public var last: Element {
+		self.resolve(favoring: .target)
 	}
 }

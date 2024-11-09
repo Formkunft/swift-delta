@@ -38,6 +38,8 @@
 - ``isIdentity()``
 - ``isIdentity(by:)``
 
-### Other Information 
+### RandomAccessCollection 
 
 - ``count``
+- ``first``
+- ``last``

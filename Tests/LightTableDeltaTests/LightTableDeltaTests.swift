@@ -83,3 +83,18 @@ import LightTableDelta
 	#expect(delta3[delta3.startIndex] == 3)
 	#expect(delta3[delta3.index(after: delta3.startIndex)] == 5)
 }
+
+@Test func bidirectionalCollection() {
+	let delta1 = Delta.source(3)
+	#expect(delta1.last == 3)
+	#expect(delta1[delta1.index(before: delta1.endIndex)] == 3)
+	
+	let delta2 = Delta.target(5)
+	#expect(delta2.last == 5)
+	#expect(delta2[delta2.index(before: delta2.endIndex)] == 5)
+	
+	let delta3 = Delta.transition(source: 3, target: 5)
+	#expect(delta3.last == 5)
+	#expect(delta3[delta3.index(before: delta3.endIndex)] == 5)
+	#expect(delta3[delta3.index(before: delta3.index(before: delta3.endIndex))] == 3)
+}
