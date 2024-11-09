@@ -89,10 +89,10 @@ public extension Delta where Element: ~Copyable {
 	}
 }
 
-public extension Delta where Element: ~Copyable {
+extension Delta where Element: ~Copyable {
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
-	consuming func map<E, T: ~Copyable>(
+	public consuming func map<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T
 	) throws(E) -> Delta<T> {
 		switch consume self {
@@ -107,7 +107,7 @@ public extension Delta where Element: ~Copyable {
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
 	@inlinable
-	consuming func mapAny<E, T: ~Copyable>(
+	public consuming func mapAny<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T?
 	) throws(E) -> Delta<T>? {
 		switch consume self {
@@ -141,7 +141,7 @@ public extension Delta where Element: ~Copyable {
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
 	@inlinable
-	consuming func mapAll<E, T: ~Copyable>(
+	public consuming func mapAll<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T?
 	) throws(E) -> Delta<T>? {
 		switch consume self {
@@ -168,7 +168,7 @@ public extension Delta where Element: ~Copyable {
 	///
 	/// If the favored element is not available, the other element is returned.
 	@inlinable
-	consuming func resolve(favoring side: Side) -> Element {
+	public consuming func resolve(favoring side: Side) -> Element {
 		switch side {
 		case .source:
 			switch consume self {
@@ -187,8 +187,8 @@ public extension Delta where Element: ~Copyable {
 	
 	/// Resolves the delta to a single element, coalescing the source and target elements in the transition case.
 	@inlinable
-	consuming func merge<E>(
-		coalesce: (consuming Element, consuming Element) throws(E) -> Element
+	public consuming func merge<E>(
+		coalesce: (_ source: consuming Element, _ target: consuming Element) throws(E) -> Element
 	) throws(E) -> Element {
 		switch consume self {
 		case .source(let source):
