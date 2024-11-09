@@ -36,10 +36,8 @@ public enum DeltaSide: Hashable, Comparable, Sendable, BitwiseCopyable, Lossless
 	/// The opposite side.
 	public var opposite: Self {
 		switch self {
-		case .source:
-			.target
-		case .target:
-			.source
+		case .source: .target
+		case .target: .source
 		}
 	}
 	

@@ -26,7 +26,7 @@ import LightTableDelta
 	let deltaDeleted = try decoder.decode(Delta<Int>.self, from: jsonDataDeleted)
 	#expect(deltaDeleted == .source(3))
 	
-	let jsonDataAdded = Data( #"{"B":5}"#.utf8)
+	let jsonDataAdded = Data(#"{"B":5}"#.utf8)
 	let deltaAdded = try decoder.decode(Delta<Int>.self, from: jsonDataAdded)
 	#expect(deltaAdded == .target(5))
 	

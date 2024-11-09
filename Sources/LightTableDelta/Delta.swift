@@ -289,7 +289,7 @@ extension Delta: Equatable where Element: Equatable {
 			false
 		case .target(_):
 			false
-		case .transition(let source, let target):
+		case .transition(source: let source, target: let target):
 			source == target
 		}
 	}
