@@ -205,6 +205,23 @@ extension Delta where Element: ~Copyable {
 	/// A source delta or target delta always returns `false` without invoking `predicate`.
 	///
 	/// - Parameter predicate: The return value of this function is returned by `isIdentity(by:)`.
+	///
+	/// ### Examples
+	///
+	/// ```swift
+	/// let delta = Delta.identity(5)
+	/// assert(delta.isIdentity { $0 == $1 })
+	/// ```
+	///
+	/// ```swift
+	/// let delta = Delta.transition(source: -5, target: 5)
+	/// assert(delta.isIdentity { abs($0) == abs($1) })
+	/// ```
+	///
+	/// ```swift
+	/// let delta = Delta.target(5)
+	/// assert(!delta.isIdentity { $0 == $1 })
+	/// ```
 	@inlinable
 	public func isIdentity<E>(
 		by predicate: (_ source: borrowing Element, _ target: borrowing Element) throws(E) -> Bool
@@ -277,11 +294,28 @@ extension Delta: Copyable where Element: Copyable {
 }
 
 extension Delta: Equatable where Element: Equatable {
-	/// Returns whether the delta is of the transition case with the source equal to the target.
+	/// Returns whether the delta is of the transition case with the source element equal to the target element.
 	///
 	/// Whether this is an identity delta is determined using the equality of `Equatable`, not reference identity (`===`).
 	/// 
 	/// A source delta or target delta always returns `false`.
+	///
+	/// ### Examples
+	///
+	/// ```swift
+	/// let delta = Delta.identity(5)
+	/// assert(delta.isIdentity())
+	/// ```
+	///
+	/// ```swift
+	/// let delta = Delta.transition(source: 5, target: 5)
+	/// assert(delta.isIdentity())
+	/// ```
+	///
+	/// ```swift
+	/// let delta = Delta.target(5)
+	/// assert(!delta.isIdentity())
+	/// ```
 	@inlinable
 	public func isIdentity() -> Bool {
 		switch self {

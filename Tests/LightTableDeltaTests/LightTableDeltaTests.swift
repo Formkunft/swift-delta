@@ -2,6 +2,26 @@ import Testing
 import Foundation
 import LightTableDelta
 
+@Test func isIdentity() {
+	let delta1 = Delta.identity(5)
+	#expect(delta1.isIdentity { $0 == $1 })
+	
+	let delta2 = Delta.transition(source: -5, target: 5)
+	#expect(delta2.isIdentity { abs($0) == abs($1) })
+	
+	let delta3 = Delta.target(5)
+	#expect(!delta3.isIdentity { $0 == $1 })
+	
+	let delta4 = Delta.identity(5)
+	#expect(delta4.isIdentity())
+	
+	let delta5 = Delta.transition(source: 5, target: 5)
+	#expect(delta5.isIdentity())
+	
+	let delta6 = Delta.target(5)
+	#expect(!delta6.isIdentity())
+}
+
 @Test func encoding() async throws {
 	let encoder = JSONEncoder()
 	encoder.outputFormatting = .sortedKeys
