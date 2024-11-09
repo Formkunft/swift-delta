@@ -35,3 +35,5 @@
 ### Identity Delta
 
 - ``identity(_:)``
+- ``isIdentity()``
+- ``isIdentity(by:)``

@@ -199,6 +199,25 @@ extension Delta where Element: ~Copyable {
 			try coalesce(source, target)
 		}
 	}
+	
+	/// Returns whether the delta is of the transition case and a predicate is true given the source and target elements.
+	///
+	/// A source delta or target delta always returns `false` without invoking `predicate`.
+	///
+	/// - Parameter predicate: The return value of this function is returned by `isIdentity(by:)`.
+	@inlinable
+	public func isIdentity<E>(
+		by predicate: (_ source: borrowing Element, _ target: borrowing Element) throws(E) -> Bool
+	) throws(E) -> Bool {
+		switch self {
+		case .source(_):
+			false
+		case .target(_):
+			false
+		case .transition(let source, let target):
+			try predicate(source, target)
+		}
+	}
 }
 
 extension Delta: Copyable where Element: Copyable {
@@ -257,7 +276,24 @@ extension Delta: Copyable where Element: Copyable {
 	}
 }
 
-extension Delta: Equatable where Element: Equatable {}
+extension Delta: Equatable where Element: Equatable {
+	/// Returns whether the delta is of the transition case with the source equal to the target.
+	///
+	/// Whether this is an identity delta is determined using the equality of `Equatable`, not reference identity (`===`).
+	/// 
+	/// A source delta or target delta always returns `false`.
+	@inlinable
+	public func isIdentity() -> Bool {
+		switch self {
+		case .source(_):
+			false
+		case .target(_):
+			false
+		case .transition(let source, let target):
+			source == target
+		}
+	}
+}
 
 extension Delta: Hashable where Element: Hashable {}
 
