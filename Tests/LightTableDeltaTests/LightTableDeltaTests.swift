@@ -57,3 +57,29 @@ import LightTableDelta
 	let jsonDataEmpty =  Data("{}".utf8)
 	#expect(throws: DecodingError.self, performing: { try decoder.decode(Delta<Int>.self, from: jsonDataEmpty) })
 }
+
+@Test func sequence() {
+	let elements1 = Array(Delta.source(3))
+	#expect(elements1 == [3])
+	
+	let elements2 = Array(Delta.target(5))
+	#expect(elements2 == [5])
+	
+	let elements3 = Array(Delta.transition(source: 3, target: 5))
+	#expect(elements3 == [3, 5])
+}
+
+@Test func collection() {
+	let delta1 = Delta.source(3)
+	#expect(delta1.first == 3)
+	#expect(delta1[delta1.startIndex] == 3)
+	
+	let delta2 = Delta.target(5)
+	#expect(delta2.first == 5)
+	#expect(delta2[delta2.startIndex] == 5)
+	
+	let delta3 = Delta.transition(source: 3, target: 5)
+	#expect(delta3.first == 3)
+	#expect(delta3[delta3.startIndex] == 3)
+	#expect(delta3[delta3.index(after: delta3.startIndex)] == 5)
+}

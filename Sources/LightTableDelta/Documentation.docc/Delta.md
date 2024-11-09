@@ -15,7 +15,7 @@
 - ``init(source:target:)-9xz8``
 - ``init(source:target:)-48ssu``
 
-### Instance Properties
+### Elements
 
 - ``source``
 - ``target``
@@ -37,3 +37,7 @@
 - ``identity(_:)``
 - ``isIdentity()``
 - ``isIdentity(by:)``
+
+### Other Information 
+
+- ``count``

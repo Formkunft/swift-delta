@@ -444,3 +444,157 @@ extension Delta: DecodableWithConfiguration where Element: DecodableWithConfigur
 extension Delta: Sendable where Element: Sendable {}
 
 extension Delta: BitwiseCopyable where Element: BitwiseCopyable {}
+
+public struct DeltaIterator<T>: IteratorProtocol {
+	@usableFromInline
+	let delta: Delta<T>
+	@usableFromInline
+	var index: Delta<T>.Index
+	
+	@inlinable
+	init(delta: Delta<T>, index: Delta<T>.Index) {
+		self.delta = delta
+		self.index = index
+	}
+	
+	@inlinable
+	public mutating func next() -> T? {
+		switch self.index.step {
+		case .source:
+			switch self.delta {
+			case .source(let source):
+				self.index = Delta<T>.Index(step: .sentinel)
+				return source
+			case .target(_):
+				preconditionFailure("source index used with target delta")
+			case .transition(source: let source, target: _):
+				self.index = Delta<T>.Index(step: .target)
+				return source
+			}
+		case .target:
+			switch self.delta {
+			case .source(_):
+				preconditionFailure("target index used with source delta")
+			case .target(let target):
+				self.index = Delta<T>.Index(step: .sentinel)
+				return target
+			case .transition(source: _, target: let target):
+				self.index = Delta<T>.Index(step: .sentinel)
+				return target
+			}
+		case .sentinel:
+			return nil
+		}
+	}
+}
+
+extension Delta: Collection {
+	public struct Index: Comparable {
+		@usableFromInline
+		enum Step: Comparable {
+			case source
+			case target
+			case sentinel
+		}
+		
+		@usableFromInline
+		let step: Step
+		
+		@usableFromInline
+		init(step: Step) {
+			self.step = step
+		}
+		
+		@inlinable
+		public static func < (lhs: Index, rhs: Index) -> Bool {
+			lhs.step < rhs.step
+		}
+	}
+	
+	@inlinable
+	public func makeIterator() -> DeltaIterator<Element> {
+		DeltaIterator(delta: self, index: self.startIndex)
+	}
+	
+	/// The number of elements in the delta.
+	@inlinable
+	public var count: Int {
+		switch self {
+		case .source(_): 1
+		case .target(_): 1
+		case .transition(source: _, target: _): 2
+		}
+	}
+	
+	@inlinable
+	public var underestimatedCount: Int {
+		self.count
+	}
+	
+	@inlinable
+	public var startIndex: Delta.Index {
+		switch self {
+		case .source(_): Delta.Index(step: .source)
+		case .target(_): Delta.Index(step: .target)
+		case .transition(source: _, target: _): Delta.Index(step: .source)
+		}
+	}
+	
+	@inlinable
+	public var endIndex: Index {
+		switch self {
+		case .source(_): Index(step: .target)
+		case .target(_): Index(step: .sentinel)
+		case .transition(source: _, target: _): Index(step: .sentinel)
+		}
+	}
+	
+	@inlinable
+	public subscript(position: Index) -> Element {
+		switch self {
+		case .source(let source):
+			guard position.step == .source else {
+				preconditionFailure("invalid index")
+			}
+			return source
+		case .target(let target):
+			guard position.step == .target else {
+				preconditionFailure("invalid index")
+			}
+			return target
+		case .transition(let source, let target):
+			switch position.step {
+			case .source: return source
+			case .target: return target
+			case .sentinel: preconditionFailure("invalid index")
+			}
+		}
+	}
+	
+	@inlinable
+	public func index(after i: Index) -> Index {
+		switch self {
+		case .source(_):
+			guard i.step == .source else {
+				preconditionFailure("invalid index")
+			}
+			return Index(step: .target)
+		case .target(_):
+			guard i.step == .target else {
+				preconditionFailure("invalid index")
+			}
+			return Index(step: .sentinel)
+		case .transition(source: _, target: _):
+			switch i.step {
+			case .source: return Index(step: .target)
+			case .target: return Index(step: .sentinel)
+			case .sentinel: preconditionFailure("invalid index")
+			}
+		}
+	}
+	
+	@inlinable
+	public var first: Element {
+		self.resolve(favoring: .source)
+	}
+}
