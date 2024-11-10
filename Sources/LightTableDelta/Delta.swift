@@ -445,7 +445,7 @@ extension Delta: Sendable where Element: Sendable {}
 
 extension Delta: BitwiseCopyable where Element: BitwiseCopyable {}
 
-public struct DeltaIterator<T>: IteratorProtocol {
+public struct _DeltaIterator<T>: IteratorProtocol {
 	@usableFromInline
 	let delta: Delta<T>
 	@usableFromInline
@@ -512,8 +512,8 @@ extension Delta: RandomAccessCollection {
 	}
 	
 	@inlinable
-	public func makeIterator() -> DeltaIterator<Element> {
-		DeltaIterator(delta: self, index: self.startIndex)
+	public func makeIterator() -> _DeltaIterator<Element> {
+		_DeltaIterator(delta: self, index: self.startIndex)
 	}
 	
 	/// The number of elements in the delta.
