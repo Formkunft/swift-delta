@@ -59,43 +59,43 @@ import LightTableDelta
 }
 
 @Test func sequence() {
-	let delta1 = Delta.source(3)
-	#expect(Array(delta1) == [3])
+	let d1 = Delta.source(3)
+	#expect(Array(d1) == [3])
 	
-	let delta2 = Delta.target(5)
-	#expect(Array(delta2) == [5])
+	let d2 = Delta.target(5)
+	#expect(Array(d2) == [5])
 	
-	let delta3 = Delta.transition(source: 3, target: 5)
-	#expect(Array(delta3) == [3, 5])
-	#expect(delta3.starts(with: delta1))
+	let d3 = Delta.transition(source: 3, target: 5)
+	#expect(Array(d3) == [3, 5])
+	#expect(d3.starts(with: d1))
 }
 
 @Test func collection() {
-	let delta1 = Delta.source(3)
-	#expect(delta1.first == 3)
-	#expect(delta1[delta1.startIndex] == 3)
+	let d1 = Delta.source(3)
+	#expect(d1.first == 3)
+	#expect(d1[d1.startIndex] == 3)
 	
-	let delta2 = Delta.target(5)
-	#expect(delta2.first == 5)
-	#expect(delta2[delta2.startIndex] == 5)
+	let d2 = Delta.target(5)
+	#expect(d2.first == 5)
+	#expect(d2[d2.startIndex] == 5)
 	
-	let delta3 = Delta.transition(source: 3, target: 5)
-	#expect(delta3.first == 3)
-	#expect(delta3[delta3.startIndex] == 3)
-	#expect(delta3[delta3.index(after: delta3.startIndex)] == 5)
+	let d3 = Delta.transition(source: 3, target: 5)
+	#expect(d3.first == 3)
+	#expect(d3[d3.startIndex] == 3)
+	#expect(d3[d3.index(after: d3.startIndex)] == 5)
 }
 
 @Test func bidirectionalCollection() {
-	let delta1 = Delta.source(3)
-	#expect(delta1.last == 3)
-	#expect(delta1[delta1.index(before: delta1.endIndex)] == 3)
+	let d1 = Delta.source(3)
+	#expect(d1.last == 3)
+	#expect(d1[d1.index(before: d1.endIndex)] == 3)
 	
-	let delta2 = Delta.target(5)
-	#expect(delta2.last == 5)
-	#expect(delta2[delta2.index(before: delta2.endIndex)] == 5)
+	let d2 = Delta.target(5)
+	#expect(d2.last == 5)
+	#expect(d2[d2.index(before: d2.endIndex)] == 5)
 	
-	let delta3 = Delta.transition(source: 3, target: 5)
-	#expect(delta3.last == 5)
-	#expect(delta3[delta3.index(before: delta3.endIndex)] == 5)
-	#expect(delta3[delta3.index(before: delta3.index(before: delta3.endIndex))] == 3)
+	let d3 = Delta.transition(source: 3, target: 5)
+	#expect(d3.last == 5)
+	#expect(d3[d3.index(before: d3.endIndex)] == 5)
+	#expect(d3[d3.index(before: d3.index(before: d3.endIndex))] == 3)
 }
