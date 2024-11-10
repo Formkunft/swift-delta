@@ -371,7 +371,7 @@ extension Delta: Encodable where Element: Encodable {
 #if canImport(Foundation)
 import Foundation
 
-@available(macOS 12, *)
+@available(macOS 12, iOS 15, tvOS 15, visionOS 1, watchOS 8, *)
 extension Delta: EncodableWithConfiguration where Element: EncodableWithConfiguration {
 	public typealias EncodingConfiguration = Element.EncodingConfiguration
 	
@@ -416,7 +416,7 @@ extension Delta: Decodable where Element: Decodable {
 #if canImport(Foundation)
 import Foundation
 
-@available(macOS 12, *)
+@available(macOS 12, iOS 15, tvOS 15, visionOS 1, watchOS 8, *)
 extension Delta: DecodableWithConfiguration where Element: DecodableWithConfiguration {
 	public typealias DecodingConfiguration = Element.DecodingConfiguration
 	
