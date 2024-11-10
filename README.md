@@ -31,3 +31,5 @@ The `Delta` type also conforms to all standard protocols (depending on the confo
 - `Sendable`
 - `BitwiseCopyable`
 - `~Copyable`
+
+Additionally, `Delta` conforms to `RandomAccessCollection`, allowing for iteration over the elements and many other operations provided by `Sequence`, `Collection`, and `BidirectionalCollection`.
