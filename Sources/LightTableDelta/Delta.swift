@@ -445,56 +445,13 @@ extension Delta: Sendable where Element: Sendable {}
 
 extension Delta: BitwiseCopyable where Element: BitwiseCopyable {}
 
-public struct _DeltaIterator<T>: IteratorProtocol {
-	@usableFromInline
-	let delta: Delta<T>
-	@usableFromInline
-	var index: Delta<T>.Index
-	
-	@inlinable
-	init(delta: Delta<T>, index: Delta<T>.Index) {
-		self.delta = delta
-		self.index = index
-	}
-	
-	@inlinable
-	public mutating func next() -> T? {
-		switch self.index.step {
-		case .source:
-			switch self.delta {
-			case .source(let source):
-				self.index = Delta<T>.Index(step: .sentinel)
-				return source
-			case .target(_):
-				preconditionFailure("source index used with target delta")
-			case .transition(source: let source, target: _):
-				self.index = Delta<T>.Index(step: .target)
-				return source
-			}
-		case .target:
-			switch self.delta {
-			case .source(_):
-				preconditionFailure("target index used with source delta")
-			case .target(let target):
-				self.index = Delta<T>.Index(step: .sentinel)
-				return target
-			case .transition(source: _, target: let target):
-				self.index = Delta<T>.Index(step: .sentinel)
-				return target
-			}
-		case .sentinel:
-			return nil
-		}
-	}
-}
-
 extension Delta: RandomAccessCollection {
-	public struct Index: Comparable {
+	public struct Index: Hashable, Sendable, BitwiseCopyable {
 		@usableFromInline
-		enum Step: Comparable {
-			case source
-			case target
-			case sentinel
+		enum Step: Int8, Sendable, BitwiseCopyable {
+			case source = 0
+			case target = 1
+			case sentinel = 2
 		}
 		
 		@usableFromInline
@@ -504,16 +461,18 @@ extension Delta: RandomAccessCollection {
 		init(step: Step) {
 			self.step = step
 		}
-		
-		@inlinable
-		public static func < (lhs: Index, rhs: Index) -> Bool {
-			lhs.step < rhs.step
-		}
 	}
 	
+	public enum SubSequence {
+		case empty(Delta<Element>.Index)
+		case delta(Delta<Element>)
+	}
+	
+	public typealias Iterator = _DeltaIterator<Element>
+	
 	@inlinable
-	public func makeIterator() -> _DeltaIterator<Element> {
-		_DeltaIterator(delta: self, index: self.startIndex)
+	public func makeIterator() -> Iterator {
+		Iterator(base: .delta(self), index: self.startIndex)
 	}
 	
 	/// The number of elements in the delta.
@@ -532,7 +491,7 @@ extension Delta: RandomAccessCollection {
 	}
 	
 	@inlinable
-	public var startIndex: Delta.Index {
+	public var startIndex: Index {
 		switch self {
 		case .source(_): Delta.Index(step: .source)
 		case .target(_): Delta.Index(step: .target)
@@ -550,69 +509,13 @@ extension Delta: RandomAccessCollection {
 	}
 	
 	@inlinable
-	public subscript(position: Index) -> Element {
-		switch self {
-		case .source(let source):
-			guard position.step == .source else {
-				preconditionFailure("invalid index")
-			}
-			return source
-		case .target(let target):
-			guard position.step == .target else {
-				preconditionFailure("invalid index")
-			}
-			return target
-		case .transition(let source, let target):
-			switch position.step {
-			case .source: return source
-			case .target: return target
-			case .sentinel: preconditionFailure("invalid index")
-			}
-		}
-	}
-	
-	@inlinable
 	public func index(after i: Index) -> Index {
-		switch self {
-		case .source(_):
-			guard i.step == .source else {
-				preconditionFailure("invalid index")
-			}
-			return Index(step: .target)
-		case .target(_):
-			guard i.step == .target else {
-				preconditionFailure("invalid index")
-			}
-			return Index(step: .sentinel)
-		case .transition(source: _, target: _):
-			switch i.step {
-			case .source: return Index(step: .target)
-			case .target: return Index(step: .sentinel)
-			case .sentinel: preconditionFailure("invalid index")
-			}
-		}
+		i.advanced(by: 1)
 	}
 	
 	@inlinable
 	public func index(before i: Index) -> Index {
-		switch self {
-		case .source(_):
-			guard i.step == .target else {
-				preconditionFailure("invalid index")
-			}
-			return Index(step: .source)
-		case .target(_):
-			guard i.step == .sentinel else {
-				preconditionFailure("invalid index")
-			}
-			return Index(step: .target)
-		case .transition(source: _, target: _):
-			switch i.step {
-			case .source: preconditionFailure("invalid index")
-			case .target: return Index(step: .source)
-			case .sentinel: return Index(step: .target)
-			}
-		}
+		i.advanced(by: -1)
 	}
 	
 	/// The source element, if available; otherwise, the target element.
@@ -625,5 +528,218 @@ extension Delta: RandomAccessCollection {
 	@inlinable
 	public var last: Element {
 		self.resolve(favoring: .target)
+	}
+	
+	@inlinable
+	public subscript(position: Index) -> Element {
+		switch self {
+		case .source(let source):
+			guard position.step == .source else {
+				preconditionFailure("index out of bounds")
+			}
+			return source
+		case .target(let target):
+			guard position.step == .target else {
+				preconditionFailure("index out of bounds")
+			}
+			return target
+		case .transition(let source, let target):
+			switch position.step {
+			case .source: return source
+			case .target: return target
+			case .sentinel: preconditionFailure("index out of bounds")
+			}
+		}
+	}
+	
+	@inlinable
+	public subscript(bounds: Range<Index>) -> SubSequence {
+		guard bounds.lowerBound.step != bounds.upperBound.step else {
+			return .empty(bounds.lowerBound)
+		}
+		switch (bounds.lowerBound.step, bounds.upperBound.step) {
+		case (.source, .target):
+			guard let source = self.source else {
+				preconditionFailure("range out of bounds")
+			}
+			return .delta(.source(source))
+		case (.target, .sentinel):
+			guard let target = self.target else {
+				preconditionFailure("range out of bounds")
+			}
+			return .delta(.target(target))
+		case (.source, .sentinel):
+			guard case .transition(source: let source, target: let target) = self else {
+				preconditionFailure("range out of bounds")
+			}
+			return .delta(.transition(source: source, target: target))
+		default:
+			preconditionFailure("invalid range")
+		}
+	}
+	
+	@inlinable
+	public subscript(unbounded: UnboundedRange) -> SubSequence {
+		self[self.startIndex ..< self.endIndex]
+	}
+}
+
+extension Delta.Index: Comparable {
+	@inlinable
+	public static func < (lhs: Self, rhs: Self) -> Bool {
+		lhs.step.rawValue < rhs.step.rawValue
+	}
+}
+
+extension Delta.Index: Strideable {
+	public typealias Stride = Int
+	
+	@inlinable
+	public func distance(to other: Delta<Element>.Index) -> Stride {
+		Int(self.step.rawValue - other.step.rawValue)
+	}
+	
+	@inlinable
+	public func advanced(by n: Stride) -> Delta<Element>.Index {
+		Self(step: Step(rawValue: self.step.rawValue + Int8(n))!)
+	}
+}
+
+extension Delta.SubSequence: RandomAccessCollection {
+	public typealias Index = Delta<Element>.Index
+	
+	public typealias SubSequence = Self
+	
+	public typealias Iterator = Delta<Element>.Iterator
+	
+	@inlinable
+	public func makeIterator() -> Iterator {
+		Iterator(base: self, index: self.startIndex)
+	}
+	
+	@inlinable
+	public var count: Int {
+		switch self {
+		case .empty(_): 0
+		case .delta(let delta): delta.count
+		}
+	}
+	
+	@inlinable
+	public var underestimatedCount: Int {
+		self.count
+	}
+	
+	@inlinable
+	public var startIndex: Index {
+		switch self {
+		case .empty(let index):
+			index
+		case .delta(let delta):
+			switch delta {
+			case .source(_): Delta.Index(step: .source)
+			case .target(_): Delta.Index(step: .target)
+			case .transition(source: _, target: _): Delta.Index(step: .source)
+			}
+		}
+	}
+	
+	@inlinable
+	public var endIndex: Index {
+		switch self {
+		case .empty(let index):
+			index
+		case .delta(let delta):
+			switch delta {
+			case .source(_): Delta.Index(step: .target)
+			case .target(_): Delta.Index(step: .sentinel)
+			case .transition(source: _, target: _): Delta.Index(step: .sentinel)
+			}
+		}
+	}
+	
+	@inlinable
+	public func index(after i: Index) -> Index {
+		i.advanced(by: 1)
+	}
+	
+	@inlinable
+	public func index(before i: Index) -> Index {
+		i.advanced(by: -1)
+	}
+	
+	@inlinable
+	public subscript(position: Index) -> Element {
+		guard case .delta(let delta) = self else {
+			preconditionFailure("index out of bounds")
+		}
+		return delta[position]
+	}
+	
+	@inlinable
+	public subscript(bounds: Range<Index>) -> SubSequence {
+		switch self {
+		case .empty(let index):
+			guard index == bounds.lowerBound && index == bounds.upperBound else {
+				preconditionFailure("range out of bounds")
+			}
+			return self
+		case .delta(let delta):
+			return delta[bounds]
+		}
+	}
+	
+	@inlinable
+	public subscript(unbounded: UnboundedRange) -> SubSequence {
+		self[self.startIndex ..< self.endIndex]
+	}
+}
+
+public struct _DeltaIterator<Element>: IteratorProtocol {
+	@usableFromInline
+	let base: Delta<Element>.SubSequence
+	@usableFromInline
+	var index: Delta<Element>.Index
+	
+	@inlinable
+	init(base: Delta<Element>.SubSequence, index: Delta<Element>.Index) {
+		self.base = base
+		self.index = index
+	}
+	
+	@inlinable
+	public mutating func next() -> Element? {
+		switch self.index.step {
+		case .source:
+			guard case .delta(let delta) = self.base else {
+				return nil
+			}
+			switch delta {
+			case .source(let source):
+				self.index = Delta.Index(step: .sentinel)
+				return source
+			case .target(_):
+				preconditionFailure("source index used with target delta")
+			case .transition(source: let source, target: _):
+				self.index = Delta.Index(step: .target)
+				return source
+			}
+		case .target:
+			guard case .delta(let delta) = self.base else {
+				return nil
+			}
+			switch delta {
+			case .source(_):
+				preconditionFailure("target index used with source delta")
+			case .target(let target):
+				self.index = Delta.Index(step: .sentinel)
+				return target
+			case .transition(source: _, target: let target):
+				self.index = Delta.Index(step: .sentinel)
+				return target
+			}
+		case .sentinel:
+			return nil
+		}
 	}
 }

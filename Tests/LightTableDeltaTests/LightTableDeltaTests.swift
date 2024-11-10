@@ -99,3 +99,52 @@ import LightTableDelta
 	#expect(d3[d3.index(before: d3.endIndex)] == 5)
 	#expect(d3[d3.index(before: d3.index(before: d3.endIndex))] == 3)
 }
+
+@Test func subsequence() {
+	let d1 = Delta.source(3)
+	let t1 = [
+		(d1.startIndex ..< d1.startIndex, []),
+		(d1.endIndex ..< d1.endIndex, []),
+		(d1.startIndex ..< d1.endIndex, [3]),
+	]
+	for test in t1 {
+		#expect(d1[test.0].elementsEqual(test.1))
+		#expect(d1[test.0][test.0].elementsEqual(test.1))
+		#expect(d1[test.0][test.0][test.0].elementsEqual(test.1))
+	}
+	#expect(d1[...].elementsEqual([3]))
+	#expect(d1[...][...].elementsEqual([3]))
+	#expect(d1[...][...][...].elementsEqual([3]))
+	
+	let d2 = Delta.target(5)
+	let t2 = [
+		(d2.startIndex ..< d2.startIndex, []),
+		(d2.endIndex ..< d2.endIndex, []),
+		(d2.startIndex ..< d2.endIndex, [5]),
+	]
+	for test in t2 {
+		#expect(d2[test.0].elementsEqual(test.1))
+		#expect(d2[test.0][test.0].elementsEqual(test.1))
+		#expect(d2[test.0][test.0][test.0].elementsEqual(test.1))
+	}
+	#expect(d2[...].elementsEqual([5]))
+	#expect(d2[...][...].elementsEqual([5]))
+	#expect(d2[...][...][...].elementsEqual([5]))
+	
+	let d3 = Delta.transition(source: 3, target: 5)
+	let t3 = [
+		(d3.startIndex ..< d3.startIndex, []),
+		(d3.endIndex ..< d3.endIndex, []),
+		(d3.startIndex ..< d3.index(after: d3.startIndex), [3]),
+		(d3.index(after: d3.startIndex) ..< d3.endIndex, [5]),
+		(d3.startIndex ..< d3.endIndex, [3, 5]),
+	]
+	for test in t3 {
+		#expect(d3[test.0].elementsEqual(test.1))
+		#expect(d3[test.0][test.0].elementsEqual(test.1))
+		#expect(d3[test.0][test.0][test.0].elementsEqual(test.1))
+	}
+	#expect(d3[...].elementsEqual([3, 5]))
+	#expect(d3[...][...].elementsEqual([3, 5]))
+	#expect(d3[...][...][...].elementsEqual([3, 5]))
+}
