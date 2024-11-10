@@ -59,14 +59,15 @@ import LightTableDelta
 }
 
 @Test func sequence() {
-	let elements1 = Array(Delta.source(3))
-	#expect(elements1 == [3])
+	let delta1 = Delta.source(3)
+	#expect(Array(delta1) == [3])
 	
-	let elements2 = Array(Delta.target(5))
-	#expect(elements2 == [5])
+	let delta2 = Delta.target(5)
+	#expect(Array(delta2) == [5])
 	
-	let elements3 = Array(Delta.transition(source: 3, target: 5))
-	#expect(elements3 == [3, 5])
+	let delta3 = Delta.transition(source: 3, target: 5)
+	#expect(Array(delta3) == [3, 5])
+	#expect(delta3.starts(with: delta1))
 }
 
 @Test func collection() {
