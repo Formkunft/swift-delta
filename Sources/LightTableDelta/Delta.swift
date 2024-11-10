@@ -124,11 +124,13 @@ extension Delta where Element: ~Copyable {
 		case .transition(let source, let target):
 			let source = try transform(source)
 			let target = try transform(target)
-			return if source != nil && target != nil {
-				.transition(source: source!, target: target!)
-			}
-			else if let source {
-				.source(source)
+			return if let source {
+				if let target {
+					.transition(source: source, target: target)
+				}
+				else {
+					.source(source)
+				}
 			}
 			else if let target {
 				.target(target)

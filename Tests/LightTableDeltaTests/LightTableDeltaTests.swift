@@ -22,6 +22,9 @@ import LightTableDelta
 	#expect(!delta6.isIdentity())
 }
 
+#if canImport(Foundation)
+import Foundation
+
 @Test func encoding() async throws {
 	let encoder = JSONEncoder()
 	encoder.outputFormatting = .sortedKeys
@@ -57,6 +60,7 @@ import LightTableDelta
 	let jsonDataEmpty =  Data("{}".utf8)
 	#expect(throws: DecodingError.self, performing: { try decoder.decode(Delta<Int>.self, from: jsonDataEmpty) })
 }
+#endif
 
 @Test func sequence() {
 	let d1 = Delta.source(3)
@@ -107,10 +111,10 @@ import LightTableDelta
 		(d1.endIndex ..< d1.endIndex, []),
 		(d1.startIndex ..< d1.endIndex, [3]),
 	]
-	for test in t1 {
-		#expect(d1[test.0].elementsEqual(test.1))
-		#expect(d1[test.0][test.0].elementsEqual(test.1))
-		#expect(d1[test.0][test.0][test.0].elementsEqual(test.1))
+	for (range, elements) in t1 {
+		#expect(d1[range].elementsEqual(elements))
+		#expect(d1[range][range].elementsEqual(elements))
+		#expect(d1[range][range][range].elementsEqual(elements))
 	}
 	#expect(d1[...].elementsEqual([3]))
 	#expect(d1[...][...].elementsEqual([3]))
@@ -122,10 +126,10 @@ import LightTableDelta
 		(d2.endIndex ..< d2.endIndex, []),
 		(d2.startIndex ..< d2.endIndex, [5]),
 	]
-	for test in t2 {
-		#expect(d2[test.0].elementsEqual(test.1))
-		#expect(d2[test.0][test.0].elementsEqual(test.1))
-		#expect(d2[test.0][test.0][test.0].elementsEqual(test.1))
+	for (range, elements) in t2 {
+		#expect(d2[range].elementsEqual(elements))
+		#expect(d2[range][range].elementsEqual(elements))
+		#expect(d2[range][range][range].elementsEqual(elements))
 	}
 	#expect(d2[...].elementsEqual([5]))
 	#expect(d2[...][...].elementsEqual([5]))
@@ -139,10 +143,10 @@ import LightTableDelta
 		(d3.index(after: d3.startIndex) ..< d3.endIndex, [5]),
 		(d3.startIndex ..< d3.endIndex, [3, 5]),
 	]
-	for test in t3 {
-		#expect(d3[test.0].elementsEqual(test.1))
-		#expect(d3[test.0][test.0].elementsEqual(test.1))
-		#expect(d3[test.0][test.0][test.0].elementsEqual(test.1))
+	for (range, elements) in t3 {
+		#expect(d3[range].elementsEqual(elements))
+		#expect(d3[range][range].elementsEqual(elements))
+		#expect(d3[range][range][range].elementsEqual(elements))
 	}
 	#expect(d3[...].elementsEqual([3, 5]))
 	#expect(d3[...][...].elementsEqual([3, 5]))
