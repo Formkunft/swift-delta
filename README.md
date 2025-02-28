@@ -33,3 +33,31 @@ The `Delta` type also conforms to all standard protocols (depending on the confo
 - `~Copyable`
 
 Additionally, `Delta` conforms to `RandomAccessCollection`, allowing for iteration over the elements and many other operations provided by `Sequence`, `Collection`, and `BidirectionalCollection`.
+
+## Using Swift Delta in your project
+
+Add `swift-delta` as a dependency to your package:
+
+```swift
+let package = Package(
+    // ...
+    dependencies: [
+        .package(url: "https://github.com/Formkunft/swift-delta", .upToNextMajor(from: "0.3.0")),
+    ],
+    targets: [
+        .target(
+            // ...
+            dependencies: [
+                .product(name: "Delta", package: "swift-delta"),
+            ]),
+    ]
+)
+```
+
+Then, import `Delta` in your code:
+
+```swift
+import Delta
+
+// ...
+```
