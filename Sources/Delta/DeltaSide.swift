@@ -1,7 +1,4 @@
 //
-//  DeltaSide.swift
-//  LightTableDelta
-//
 //  Copyright 2024 Florian Pircher
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");

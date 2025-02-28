@@ -2,17 +2,17 @@
 import PackageDescription
 
 let package = Package(
-	name: "LightTableDelta",
+	name: "swift-delta",
 	products: [
 		.library(
-			name: "LightTableDelta",
-			targets: ["LightTableDelta"]),
+			name: "Delta",
+			targets: ["Delta"]),
 	],
 	targets: [
 		.target(
-			name: "LightTableDelta"),
+			name: "Delta"),
 		.testTarget(
-			name: "LightTableDeltaTests",
-			dependencies: ["LightTableDelta"]),
+			name: "DeltaTests",
+			dependencies: ["Delta"]),
 	]
 )
