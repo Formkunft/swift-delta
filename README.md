@@ -1,6 +1,6 @@
-# LightTableDelta
+# Swift Delta
 
-A Swift package for a type `Delta<Element>` with three cases:
+Swift Delta is a package for a type `Delta<Element>` with three cases:
 
 - `source(Element)`
 - `target(Element)`
