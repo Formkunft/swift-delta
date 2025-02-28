@@ -42,22 +42,22 @@ Add `swift-delta` as a dependency to your package:
 let package = Package(
     // ...
     dependencies: [
-        .package(url: "https://github.com/Formkunft/swift-delta", .upToNextMajor(from: "0.3.0")),
+        .package(url: "https://github.com/Formkunft/swift-delta", .upToNextMajor(from: "0.4.0")),
     ],
     targets: [
         .target(
             // ...
             dependencies: [
-                .product(name: "Delta", package: "swift-delta"),
+                .product(name: "DeltaPackage", package: "swift-delta"),
             ]),
     ]
 )
 ```
 
-Then, import `Delta` in your code:
+Then, import `DeltaPackage` in your code:
 
 ```swift
-import Delta
+import DeltaPackage
 
 // ...
 ```
