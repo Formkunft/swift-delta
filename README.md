@@ -48,16 +48,16 @@ let package = Package(
         .target(
             // ...
             dependencies: [
-                .product(name: "DeltaPackage", package: "swift-delta"),
+                .product(name: "DeltaModule", package: "swift-delta"),
             ]),
     ]
 )
 ```
 
-Then, import `DeltaPackage` in your code:
+Then, import `DeltaModule` in your code:
 
 ```swift
-import DeltaPackage
+import DeltaModule
 
 // ...
 ```
