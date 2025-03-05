@@ -6,6 +6,11 @@ Swift Delta is a package for a type `Delta<Element>` with three cases:
 - `target(Element)`
 - `transition(source: Element, target: Element)`
 
+***
+
+- [Documentation](https://swiftpackageindex.com/Formkunft/swift-delta/documentation/deltamodule)
+- [Swift Package Index](https://swiftpackageindex.com/Formkunft/swift-delta)
+
 ## Description
 
 This `Delta` type represents an inclusive OR relation: Either a source element is available, or a target element is available, or both are available.
