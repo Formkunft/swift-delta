@@ -263,6 +263,17 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
+	/// Returns the element from the specified side, if available; otherwise, `nil`.
+	@inlinable
+	public subscript(_ side: Side) -> Element? {
+		switch side {
+		case .source:
+			self.source
+		case .target:
+			self.target
+		}
+	}
+	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
 	/// In the transition case, both elements are transformed concurrently.
