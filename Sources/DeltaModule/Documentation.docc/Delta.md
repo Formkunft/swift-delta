@@ -32,6 +32,11 @@
 - ``mapAny(_:)``
 - ``mapAll(_:)``
 
+### Delta Sides
+
+- ``side``
+- ``subscript(_:)-8cq40``
+
 ### Identity Delta
 
 - ``identity(_:)``

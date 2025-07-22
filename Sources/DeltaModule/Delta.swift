@@ -87,6 +87,16 @@ public extension Delta where Element: ~Copyable {
 }
 
 extension Delta where Element: ~Copyable {
+	/// Returns the side for source and target deltas and `nil` for transition deltas.
+	@inlinable
+	public var side: Side? {
+		switch self {
+		case .source(_): .source
+		case .target(_): .target
+		case .transition(source: _, target: _): nil
+		}
+	}
+	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
 	public consuming func map<E, T: ~Copyable>(
