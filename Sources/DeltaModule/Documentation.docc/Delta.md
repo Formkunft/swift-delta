@@ -10,10 +10,10 @@
 
 ### Initializers
 
-- ``init(source:target:)-46jx5``
-- ``init(source:target:)-5kpz0``
-- ``init(source:target:)-9xz8``
-- ``init(source:target:)-48ssu``
+- ``init(source:target:)-(Element,Element)``
+- ``init(source:target:)-(Element,Element?)``
+- ``init(source:target:)-(Element?,Element)``
+- ``init(source:target:)-(Element?,Element?)``
 
 ### Elements
 
@@ -23,6 +23,8 @@
 ### Resolving to a Single Element
 
 - ``resolve(favoring:)``
+- ``first``
+- ``last``
 - ``merge(coalesce:)``
 
 ### Mapping
@@ -46,5 +48,3 @@
 ### RandomAccessCollection 
 
 - ``count``
-- ``first``
-- ``last``

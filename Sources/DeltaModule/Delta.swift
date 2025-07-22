@@ -496,6 +496,8 @@ extension Delta: RandomAccessCollection {
 	}
 	
 	/// The number of elements in the delta.
+	///
+	/// The value is always either 1 or 2.
 	@inlinable
 	public var count: Int {
 		switch self {
