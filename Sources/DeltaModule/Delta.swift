@@ -513,9 +513,9 @@ extension Delta: RandomAccessCollection {
 	@inlinable
 	public var startIndex: Index {
 		switch self {
-		case .source(_): Delta.Index(step: .source)
-		case .target(_): Delta.Index(step: .target)
-		case .transition(source: _, target: _): Delta.Index(step: .source)
+		case .source(_): Index(step: .source)
+		case .target(_): Index(step: .target)
+		case .transition(source: _, target: _): Index(step: .source)
 		}
 	}
 	
