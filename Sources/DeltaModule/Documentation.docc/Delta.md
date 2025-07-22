@@ -47,4 +47,5 @@
 
 ### RandomAccessCollection 
 
+- ``isEmpty``
 - ``count``
