@@ -68,11 +68,11 @@ import Foundation
 	let deltaAdded = try decoder.decode(Delta<Int>.self, from: jsonDataAdded)
 	#expect(deltaAdded == .target(5))
 	
-	let jsonDataModified =  Data(#"{"A":3,"B":5}"#.utf8)
+	let jsonDataModified = Data(#"{"A":3,"B":5}"#.utf8)
 	let deltaModified = try decoder.decode(Delta<Int>.self, from: jsonDataModified)
 	#expect(deltaModified == .transition(source: 3, target: 5))
 	
-	let jsonDataEmpty =  Data("{}".utf8)
+	let jsonDataEmpty = Data("{}".utf8)
 	#expect(throws: DecodingError.self, performing: { try decoder.decode(Delta<Int>.self, from: jsonDataEmpty) })
 }
 #endif

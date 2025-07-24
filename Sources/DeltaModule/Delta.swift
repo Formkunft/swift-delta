@@ -527,7 +527,7 @@ extension Delta: Equatable where Element: Equatable {
 	/// Returns whether the delta is of the transition case with the source element equal to the target element.
 	///
 	/// Whether this is an identity delta is determined using the equality of `Equatable`, not reference identity (`===`).
-	/// 
+	///
 	/// A source delta or target delta always returns `false`.
 	///
 	/// ### Examples
