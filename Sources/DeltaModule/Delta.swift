@@ -435,6 +435,91 @@ extension Delta: Copyable where Element: Copyable {
 			}
 		}
 	}
+	
+	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
+	///
+	/// In the transition case, both elements are transformed concurrently.
+	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
+	@inlinable
+	public func asyncMapAny<E, T>(
+		_ transform: @Sendable (Element) async throws(E) -> T?
+	) async throws(E) -> Delta<T>? where Element: Sendable {
+		switch self {
+		case .source(let source):
+			guard let source = try await transform(source) else {
+				return nil
+			}
+			return .source(source)
+		case .target(let target):
+			guard let target = try await transform(target) else {
+				return nil
+			}
+			return .target(target)
+		case .transition(let source, let target):
+			do {
+				async let source = transform(source)
+				async let target = transform(target)
+				return if let source = try await source {
+					if let target = try await target {
+						.transition(source: source, target: target)
+					}
+					else {
+						.source(source)
+					}
+				}
+				else if let target = try await target {
+					.target(target)
+				}
+				else {
+					nil
+				}
+			}
+			catch let error as E {
+				throw error
+			}
+			catch {
+				preconditionFailure()
+			}
+		}
+	}
+	
+	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
+	///
+	/// In the transition case, both elements are transformed concurrently.
+	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
+	@inlinable
+	public func asyncMapAll<E, T>(
+		_ transform: @Sendable (Element) async throws(E) -> T?
+	) async throws(E) -> Delta<T>? where Element: Sendable {
+		switch self {
+		case .source(let source):
+			guard let source = try await transform(source) else {
+				return nil
+			}
+			return .source(source)
+		case .target(let target):
+			guard let target = try await transform(target) else {
+				return nil
+			}
+			return .target(target)
+		case .transition(let source, let target):
+			do {
+				async let source = transform(source)
+				async let target = transform(target)
+				guard let source = try await source,
+				      let target = try await target else {
+					return nil
+				}
+				return .transition(source: source, target: target)
+			}
+			catch let error as E {
+				throw error
+			}
+			catch {
+				preconditionFailure()
+			}
+		}
+	}
 	#endif
 }
 
