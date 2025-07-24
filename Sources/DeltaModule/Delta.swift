@@ -348,6 +348,65 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
+	/// Returns the result of processing an intermediate delta.
+	///
+	/// Within `intermediateContext`, `transform` must be called with an intermediate element.
+	/// An intermediate delta is create from this element (or elements, in case of a transition delta, where `intermediateContext` is called a second time nested in the first call).
+	/// `process` is passed this intermediate delta and its return value is in turn returned by this method.
+	///
+	/// This mapping to an intermediate delta is helpful in cases where regular mapping would violate the lifetime of an element.
+	///
+	/// For example, mapping a `Delta<[UInt8]>` to a `Delta<UnsafeRawBufferPointer>` is normally a programming error as the pointer is only valid for the duration of the closure’s execution:
+	///
+	/// ```swift
+	/// let arrayDelta = Delta<[UInt8]>.source([0x00, 0x01, 0x02])
+	/// let pointerDelta = arrayDelta.map { array in
+	///     return array.withUnsafeBytes { $0 }
+	/// }
+	/// // processing `pointerDelta` is a programming error:
+	/// // not safe to use its elements outside `withUnsafeBytes`
+	/// ```
+	///
+	/// Instead, use this method to safely map a delta to a delta with intermediate elements.
+	///
+	/// ```swift
+	/// arrayDelta.withIntermediate { array, transform in
+	///     return array.withUnsafeBytes { transform($0) }
+	/// } process: { pointerDelta in
+	///     // processing `pointerDelta` here is OK
+	/// }
+	/// ```
+	///
+	/// The argument to `process` is valid only for the duration of the closure’s execution.
+	///
+	/// - Throws: Errors thrown by either `intermediateContext` or `process` are rethrown.
+	@inlinable
+	public func withIntermediate<E, I, T>(
+		// TODO: why does this need to be `@escaping`?
+		_ intermediateContext: @escaping (
+			_ element: Element,
+			_ transform: (I) throws(E) -> T
+		) throws(E) -> T,
+		process: (Delta<I>) throws(E) -> T,
+	) throws(E) -> T {
+		switch self {
+		case .source(let element):
+			return try intermediateContext(element) { intermediate throws(E) in
+				try process(.source(intermediate))
+			}
+		case .target(let element):
+			return try intermediateContext(element) { intermediate throws(E) in
+				try process(.target(intermediate))
+			}
+		case .transition(source: let source, target: let target):
+			return try intermediateContext(source) { sourceIntermediate throws(E) in
+				try intermediateContext(target) { targetIntermediate throws(E) in
+					try process(.transition(source: sourceIntermediate, target: targetIntermediate))
+				}
+			}
+		}
+	}
+	
 	#if !$Embedded
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
