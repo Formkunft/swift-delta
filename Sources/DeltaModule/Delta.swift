@@ -285,6 +285,7 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
+	#if !$Embedded
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
 	/// In the transition case, both elements are transformed concurrently.
@@ -312,6 +313,7 @@ extension Delta: Copyable where Element: Copyable {
 			}
 		}
 	}
+	#endif
 }
 
 extension Delta: Equatable where Element: Equatable {
@@ -365,6 +367,7 @@ extension Delta: CustomDebugStringConvertible {
 	}
 }
 
+#if !$Embedded
 public extension Delta where Element: ~Copyable {
 	enum CodingKeys: String, CodingKey {
 		case source = "A"
@@ -460,6 +463,7 @@ extension Delta: DecodableWithConfiguration where Element: DecodableWithConfigur
 		}
 	}
 }
+#endif
 #endif
 
 extension Delta: Sendable where Element: Sendable {}
