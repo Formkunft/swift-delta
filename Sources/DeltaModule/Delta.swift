@@ -193,10 +193,12 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
-	/// Resolves the delta to a single element, coalescing the source and target elements in the transition case.
+	/// Resolves the delta to a single element, merging the source and target elements in the transition case.
+	///
+	/// `merge` is called only in the transition case.
 	@inlinable
-	public consuming func merge<E>(
-		coalesce: (_ source: consuming Element, _ target: consuming Element) throws(E) -> Element
+	public consuming func coalesce<E>(
+		_ merge: (_ source: consuming Element, _ target: consuming Element) throws(E) -> Element
 	) throws(E) -> Element {
 		switch consume self {
 		case .source(let source):
@@ -204,7 +206,7 @@ extension Delta where Element: ~Copyable {
 		case .target(let target):
 			target
 		case .transition(let source, let target):
-			try coalesce(source, target)
+			try merge(source, target)
 		}
 	}
 	

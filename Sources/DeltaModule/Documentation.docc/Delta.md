@@ -25,7 +25,7 @@
 - ``resolve(favoring:)``
 - ``first``
 - ``last``
-- ``merge(coalesce:)``
+- ``coalesce(_:)``
 
 ### Mapping
 
