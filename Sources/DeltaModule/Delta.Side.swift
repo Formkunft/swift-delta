@@ -45,3 +45,8 @@ public enum DeltaSide: Hashable, Comparable, Sendable, BitwiseCopyable, Lossless
 		}
 	}
 }
+
+extension Delta where Element: ~Copyable {
+	/// A description of the two sides of a delta value.
+	public typealias Side = DeltaSide
+}

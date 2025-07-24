@@ -18,7 +18,6 @@
 public enum Delta<Element>: ~Copyable where Element: ~Copyable {
 	/// The type of the elements.
 	public typealias Element = Element
-	public typealias Side = DeltaSide
 	
 	/// A source element.
 	///
