@@ -1,4 +1,4 @@
-# ``LightTableDelta``
+# ``DeltaModule``
 
 A type `Delta<Element>` representing an inclusive OR relation.
 
