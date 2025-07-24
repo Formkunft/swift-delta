@@ -20,9 +20,8 @@ This `Delta` type represents an inclusive OR relation: Either a source element i
 
 The source and target are described as the two sides of a delta.
 Both sides are accessible via optional `source` and `target` properties.
-Convenient methods like `resolve(favoring:)` and `merge(coalesce:)` also provide access to the elements.
 
-Transform a `Delta` value to a different `Delta` value using `map(:)`, `asyncMap(:)`, `mapAny(:)`, or `mapAll(:)`.
+There are many convenient methods, including mapping a delta by transforming its elements, composing multiple deltas, coalescing a delta to a single element, and subscripting into either side of a delta.
 
 The `Delta` type also conforms to all standard protocols (depending on the conformances of it’s `Element` type):
 
