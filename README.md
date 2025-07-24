@@ -1,5 +1,7 @@
 # Swift Delta
 
+*Platforms: Apple OS, Linux, Android, Wasm, embedded*
+
 Swift Delta is a package for a type `Delta<Element>` with three cases:
 
 - `source(Element)`
