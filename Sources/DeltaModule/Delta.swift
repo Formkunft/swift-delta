@@ -285,6 +285,69 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
+	/// Returns a new delta composed of the elements of the two deltas, provided both are of the same case.
+	///
+	/// If both `self` and `other` are of the same case, their elements are paired and returned in a new delta.
+	/// Otherwise, `nil` is returned.
+	@inlinable
+	public consuming func compose<T>(
+		with other: Delta<T>,
+	) -> Delta<(Element, T)>? {
+		switch self {
+		case .source(let e1):
+			guard case .source(let e2) = other else {
+				return nil
+			}
+			return .source((e1, e2))
+		case .target(let e1):
+			guard case .target(let e2) = other else {
+				return nil
+			}
+			return .target((e1, e2))
+		case .transition(let s1, let t1):
+			guard case .transition(source: let s2, target: let t2) = other else {
+				return nil
+			}
+			return .transition(source: (s1, s2), target: (t1, t2))
+		}
+	}
+	
+	/// Returns a new delta composed of the elements of the deltas, provided all are of the same case.
+	///
+	/// If `self` and all `other` deltas are of the same case, their elements are packed in tuple and returned in a new delta.
+	/// Otherwise, `nil` is returned.
+	@_disfavoredOverload
+	@inlinable
+	public consuming func compose<each T>(
+		with other: repeat Delta<each T>,
+	) -> Delta<(Element, repeat each T)>? {
+		switch self {
+		case .source(let e1):
+			for delta in repeat each other {
+				guard case .source(_) = delta else {
+					return nil
+				}
+			}
+			return .source((e1, repeat (each other).source.unsafelyUnwrapped))
+		case .target(let e1):
+			for delta in repeat each other {
+				guard case .target(_) = delta else {
+					return nil
+				}
+			}
+			return .target((e1, repeat (each other).target.unsafelyUnwrapped))
+		case .transition(let s1, let t1):
+			for delta in repeat each other {
+				guard case .transition(source: _, target: _) = delta else {
+					return nil
+				}
+			}
+			return .transition(
+				source: (s1, repeat (each other).source.unsafelyUnwrapped),
+				target: (t1, repeat (each other).target.unsafelyUnwrapped))
+		}
+	}
+	
 	#if !$Embedded
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///
