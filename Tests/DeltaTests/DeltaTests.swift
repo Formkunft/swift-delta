@@ -15,7 +15,7 @@
 //
 
 import Testing
-import Delta
+import DeltaModule
 
 @Test func isIdentity() {
 	let delta1 = Delta.identity(5)
