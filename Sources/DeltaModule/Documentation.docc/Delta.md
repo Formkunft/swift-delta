@@ -20,24 +20,32 @@
 - ``source``
 - ``target``
 
+### Delta Sides
+
+- ``side``
+- ``subscript(_:)-8cq40``
+
 ### Resolving to a Single Element
 
-- ``resolve(favoring:)``
 - ``first``
 - ``last``
+- ``resolve(favoring:)``
 - ``coalesce(_:)``
+
+### Composition
+
+- ``compose(with:)-iytf``
+- ``compose(with:)-5uwg4``
 
 ### Mapping
 
 - ``map(_:)``
 - ``asyncMap(_:)``
 - ``mapAny(_:)``
+- ``asyncMapAny(_:)``
 - ``mapAll(_:)``
-
-### Delta Sides
-
-- ``side``
-- ``subscript(_:)-8cq40``
+- ``asyncMapAll(_:)``
+- ``withIntermediate(_:process:)``
 
 ### Identity Delta
 
