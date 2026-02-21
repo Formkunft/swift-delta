@@ -285,6 +285,30 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
+	@inlinable
+	var first: Element {
+		switch self {
+		case .source(let source):
+			source
+		case .target(let target):
+			target
+		case .transition(source: let source, target: _):
+			source
+		}
+	}
+	
+	@inlinable
+	var last: Element {
+		switch self {
+		case .source(let source):
+			source
+		case .target(let target):
+			target
+		case .transition(source: _, target: let target):
+			target
+		}
+	}
+	
 	/// Returns a new delta composed of the elements of the two deltas, provided both are of the same case.
 	///
 	/// If both `self` and `other` are of the same case, their elements are paired and returned in a new delta.
@@ -756,18 +780,6 @@ extension Delta: RandomAccessCollection {
 	@inlinable
 	public func index(before i: Index) -> Index {
 		i.advanced(by: -1)
-	}
-	
-	/// The source element, if available; otherwise, the target element.
-	@inlinable
-	public var first: Element {
-		self.resolve(favoring: .source)
-	}
-	
-	/// The target element, if available; otherwise, the source element.
-	@inlinable
-	public var last: Element {
-		self.resolve(favoring: .target)
 	}
 	
 	@inlinable
