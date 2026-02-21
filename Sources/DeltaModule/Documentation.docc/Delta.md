@@ -23,6 +23,7 @@
 ### Delta Sides
 
 - ``side``
+- ``Delta/Side``
 - ``subscript(_:)-8cq40``
 
 ### Resolving to a Single Element
@@ -40,10 +41,10 @@
 ### Mapping
 
 - ``map(_:)``
-- ``asyncMap(_:)``
 - ``mapAny(_:)``
-- ``asyncMapAny(_:)``
 - ``mapAll(_:)``
+- ``asyncMap(_:)``
+- ``asyncMapAny(_:)``
 - ``asyncMapAll(_:)``
 - ``withIntermediate(_:process:)``
 
