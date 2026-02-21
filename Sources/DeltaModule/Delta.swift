@@ -820,7 +820,7 @@ extension Delta: RandomAccessCollection {
 	
 	@inlinable
 	public subscript(unbounded: UnboundedRange) -> SubSequence {
-		self[self.startIndex ..< self.endIndex]
+		.delta(self)
 	}
 }
 
@@ -877,9 +877,9 @@ extension Delta.SubSequence: RandomAccessCollection {
 			index
 		case .delta(let delta):
 			switch delta {
-			case .source(_): Delta.Index(step: .source)
-			case .target(_): Delta.Index(step: .target)
-			case .transition(source: _, target: _): Delta.Index(step: .source)
+			case .source(_): Index(step: .source)
+			case .target(_): Index(step: .target)
+			case .transition(source: _, target: _): Index(step: .source)
 			}
 		}
 	}
@@ -891,9 +891,9 @@ extension Delta.SubSequence: RandomAccessCollection {
 			index
 		case .delta(let delta):
 			switch delta {
-			case .source(_): Delta.Index(step: .target)
-			case .target(_): Delta.Index(step: .sentinel)
-			case .transition(source: _, target: _): Delta.Index(step: .sentinel)
+			case .source(_): Index(step: .target)
+			case .target(_): Index(step: .sentinel)
+			case .transition(source: _, target: _): Index(step: .sentinel)
 			}
 		}
 	}
@@ -931,7 +931,7 @@ extension Delta.SubSequence: RandomAccessCollection {
 	
 	@inlinable
 	public subscript(unbounded: UnboundedRange) -> SubSequence {
-		self[self.startIndex ..< self.endIndex]
+		self
 	}
 }
 
