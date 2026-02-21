@@ -389,7 +389,7 @@ extension Delta: Copyable where Element: Copyable {
 	}
 	
 	@inlinable
-	var first: Element {
+	public var first: Element {
 		switch self {
 		case .source(let source):
 			source
@@ -401,7 +401,7 @@ extension Delta: Copyable where Element: Copyable {
 	}
 	
 	@inlinable
-	var last: Element {
+	public var last: Element {
 		switch self {
 		case .source(let source):
 			source
