@@ -172,6 +172,50 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
+	/// Applies a transformation to the elements in source–target order and returns the first non-`nil` result.
+	///
+	/// Returns `nil` when the transformation returns `nil` for all elements.
+	@inlinable
+	public func firstNonNilMap<E, T: ~Copyable>(
+		_ transform: (borrowing Element) throws(E) -> T?,
+	) throws(E) -> T? {
+		switch self {
+		case .source(let element):
+			try transform(element)
+		case .target(let element):
+			try transform(element)
+		case .transition(source: let source, target: let target):
+			if let result = try transform(source) {
+				result
+			}
+			else {
+				try transform(target)
+			}
+		}
+	}
+	
+	/// Applies a transformation to the elements in target–source order and returns the first non-`nil` result.
+	///
+	/// Returns `nil` when the transformation returns `nil` for all elements.
+	@inlinable
+	public func lastNonNilMap<E, T: ~Copyable>(
+		_ transform: (borrowing Element) throws(E) -> T?,
+	) throws(E) -> T? {
+		switch self {
+		case .source(let element):
+			try transform(element)
+		case .target(let element):
+			try transform(element)
+		case .transition(source: let source, target: let target):
+			if let result = try transform(target) {
+				result
+			}
+			else {
+				try transform(source)
+			}
+		}
+	}
+	
 	/// Resolves the delta to a single element, favoring the element on the given side.
 	///
 	/// If the favored element is not available, the other element is returned.

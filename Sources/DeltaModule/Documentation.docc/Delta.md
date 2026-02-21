@@ -32,6 +32,8 @@
 - ``last``
 - ``resolve(favoring:)``
 - ``coalesce(_:)``
+- ``firstNonNilMap(_:)``
+- ``lastNonNilMap(_:)``
 
 ### Composition
 
