@@ -20,11 +20,13 @@ public enum DeltaSide: String, Hashable, Comparable, Sendable, BitwiseCopyable, 
 	case source
 	case target
 	
+	@inlinable
 	public init?(_ description: String) {
 		self.init(rawValue: description)
 	}
 	
 	/// The opposite side.
+	@inlinable
 	public var opposite: Self {
 		switch self {
 		case .source: .target
@@ -32,10 +34,12 @@ public enum DeltaSide: String, Hashable, Comparable, Sendable, BitwiseCopyable, 
 		}
 	}
 	
+	@inlinable
 	public static func < (lhs: Self, rhs: Self) -> Bool {
 		lhs == .source && rhs == .target
 	}
 	
+	@inlinable
 	public var description: String {
 		self.rawValue
 	}
