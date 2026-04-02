@@ -15,6 +15,7 @@
 //
 
 /// A type representing a source element, a target element, or both a source and a target element.
+@frozen
 public enum Delta<Element>: ~Copyable where Element: ~Copyable {
 	/// The type of the elements.
 	public typealias Element = Element

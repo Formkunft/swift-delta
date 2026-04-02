@@ -15,6 +15,7 @@
 //
 
 /// A description of the two sides of a delta value.
+@frozen
 public enum DeltaSide: Hashable, Comparable, Sendable, BitwiseCopyable, LosslessStringConvertible {
 	case source
 	case target
