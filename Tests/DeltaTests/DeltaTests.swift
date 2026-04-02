@@ -381,6 +381,21 @@ import Foundation
 	#expect(d3[d3.index(after: d3.startIndex)] == 5)
 }
 
+@Test func distanceTo() {
+	let d1 = Delta.source(3)
+	#expect(d1.startIndex.distance(to: d1.endIndex) == 1)
+	#expect(d1.endIndex.distance(to: d1.startIndex) == -1)
+	
+	let d2 = Delta.target(5)
+	#expect(d2.startIndex.distance(to: d2.endIndex) == 1)
+	#expect(d2.endIndex.distance(to: d2.startIndex) == -1)
+	
+	let d3 = Delta.transition(source: 3, target: 5)
+	#expect(d3.startIndex.distance(to: d3.endIndex) == 2)
+	#expect(d3.endIndex.distance(to: d3.startIndex) == -2)
+	#expect(d3.startIndex.distance(to: d3.index(after: d3.startIndex)) == 1)
+}
+
 @Test func bidirectionalCollection() {
 	let d1 = Delta.source(3)
 	#expect(d1.last == 3)

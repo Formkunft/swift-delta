@@ -892,7 +892,7 @@ extension Delta.Index: Strideable {
 	
 	@inlinable
 	public func distance(to other: Delta<Element>.Index) -> Stride {
-		Int(self.step.rawValue - other.step.rawValue)
+		Int(other.step.rawValue - self.step.rawValue)
 	}
 	
 	@inlinable
