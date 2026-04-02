@@ -17,10 +17,50 @@
 import Testing
 import DeltaModule
 
+@Test func firstNonNilMap() {
+	let d1 = Delta.source(3)
+	#expect(d1.firstNonNilMap({ "\($0)" }) == "3")
+	#expect(d1.firstNonNilMap({ _ -> String? in nil }) == nil)
+	
+	let d2 = Delta.target(5)
+	#expect(d2.firstNonNilMap({ "\($0)" }) == "5")
+	#expect(d2.firstNonNilMap({ _ -> String? in nil }) == nil)
+	
+	let d3 = Delta.transition(source: 3, target: 5)
+	// both non-nil: returns source (first)
+	#expect(d3.firstNonNilMap({ "\($0)" }) == "3")
+	// source nil, target non-nil: returns target
+	#expect(d3.firstNonNilMap({ $0 > 4 ? "\($0)" : nil }) == "5")
+	// source non-nil, target nil: returns source
+	#expect(d3.firstNonNilMap({ $0 < 4 ? "\($0)" : nil }) == "3")
+	// both nil
+	#expect(d3.firstNonNilMap({ _ -> String? in nil }) == nil)
+}
+
+@Test func lastNonNilMap() {
+	let d1 = Delta.source(3)
+	#expect(d1.lastNonNilMap({ "\($0)" }) == "3")
+	#expect(d1.lastNonNilMap({ _ -> String? in nil }) == nil)
+	
+	let d2 = Delta.target(5)
+	#expect(d2.lastNonNilMap({ "\($0)" }) == "5")
+	#expect(d2.lastNonNilMap({ _ -> String? in nil }) == nil)
+	
+	let d3 = Delta.transition(source: 3, target: 5)
+	// both non-nil: returns target (last)
+	#expect(d3.lastNonNilMap({ "\($0)" }) == "5")
+	// target nil, source non-nil: returns source
+	#expect(d3.lastNonNilMap({ $0 < 4 ? "\($0)" : nil }) == "3")
+	// target non-nil, source nil: returns target
+	#expect(d3.lastNonNilMap({ $0 > 4 ? "\($0)" : nil }) == "5")
+	// both nil
+	#expect(d3.lastNonNilMap({ _ -> String? in nil }) == nil)
+}
+
 @Test func resolve() {
 	let element1 = Delta.source(3).resolve(favoring: .source)
 	#expect(element1 == 3)
-
+	
 	let element2 = Delta.source(3).resolve(favoring: .target)
 	#expect(element2 == 3)
 	
@@ -314,6 +354,20 @@ import DeltaModule
 	#expect(!delta6.isIdentity())
 }
 
+@Test func firstLast() {
+	let d1 = Delta.source(3)
+	#expect(d1.first == 3)
+	#expect(d1.last == 3)
+	
+	let d2 = Delta.target(5)
+	#expect(d2.first == 5)
+	#expect(d2.last == 5)
+	
+	let d3 = Delta.transition(source: 3, target: 5)
+	#expect(d3.first == 3)
+	#expect(d3.last == 5)
+}
+
 #if canImport(Foundation)
 import Foundation
 
@@ -458,4 +512,12 @@ import Foundation
 	#expect(d3[...].elementsEqual([3, 5]))
 	#expect(d3[...][...].elementsEqual([3, 5]))
 	#expect(d3[...][...][...].elementsEqual([3, 5]))
+}
+
+@Test func deltaSideInit() {
+	#expect(DeltaSide("source") == .source)
+	#expect(DeltaSide("target") == .target)
+	#expect(DeltaSide("other") == nil)
+	#expect(DeltaSide("") == nil)
+	#expect(DeltaSide("Source") == nil)
 }
