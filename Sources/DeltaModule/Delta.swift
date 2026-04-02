@@ -124,6 +124,45 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
+	/// Removes `nil` elements from a delta with optional elements, returning `nil` if no elements remain.
+	///
+	/// - A source delta with a `nil` element returns `nil`.
+	/// - A target delta with a `nil` element returns `nil`.
+	/// - A transition delta with one `nil` element becomes a source or target delta.
+	/// - A transition delta with both elements `nil` returns `nil`.
+	///
+	/// This is equivalent to ``mapAny(_:)`` with the identity function `{ $0 }` as its argument.
+	@inlinable
+	public consuming func compacted<T>() -> Delta<T>? where T? == Element {
+		switch consume self {
+		case .source(let source):
+			guard let source else {
+				return nil
+			}
+			return .source(source)
+		case .target(let target):
+			guard let target else {
+				return nil
+			}
+			return .target(target)
+		case .transition(let source, let target):
+			if let source {
+				if let target {
+					return .transition(source: source, target: target)
+				}
+				else {
+					return .source(source)
+				}
+			}
+			else if let target {
+				return .target(target)
+			}
+			else {
+				return nil
+			}
+		}
+	}
+	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
 	public consuming func map<E, T: ~Copyable>(
@@ -140,6 +179,8 @@ extension Delta where Element: ~Copyable {
 	}
 	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
+	///
+	/// Instead of passing the identity function, `{ $0 }`, consider using the equivalent ``compacted()`` instead.
 	@inlinable
 	public consuming func mapAny<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T?,

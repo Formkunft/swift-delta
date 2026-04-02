@@ -347,6 +347,25 @@ import DeltaModule
 	#expect(delta8 == nil)
 }
 
+@Test func compacted() {
+	// source
+	#expect(Delta.source(3 as Int?).compacted() == .source(3))
+	#expect(Delta.source(nil as Int?).compacted() == nil)
+	
+	// target
+	#expect(Delta.target(5 as Int?).compacted() == .target(5))
+	#expect(Delta.target(nil as Int?).compacted() == nil)
+	
+	// transition: both non-nil
+	#expect(Delta.transition(source: 3 as Int?, target: 5 as Int?).compacted() == .transition(source: 3, target: 5))
+	// transition: source nil
+	#expect(Delta.transition(source: nil as Int?, target: 5 as Int?).compacted() == .target(5))
+	// transition: target nil
+	#expect(Delta.transition(source: 3 as Int?, target: nil as Int?).compacted() == .source(3))
+	// transition: both nil
+	#expect(Delta.transition(source: nil as Int?, target: nil as Int?).compacted() == nil)
+}
+
 @Test func `async map all`() async {
 	let delta1 = await Delta.source(3).asyncMapAll {
 		if $0 > 0 { $0 * 2 } else { nil }
