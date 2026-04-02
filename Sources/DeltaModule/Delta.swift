@@ -645,8 +645,8 @@ extension Delta: CustomDebugStringConvertible {
 #if !$Embedded
 public extension Delta where Element: ~Copyable {
 	enum CodingKeys: String, CodingKey {
-		case source = "A"
-		case target = "B"
+		case source
+		case target
 	}
 }
 
