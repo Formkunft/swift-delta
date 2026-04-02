@@ -16,19 +16,12 @@
 
 /// A description of the two sides of a delta value.
 @frozen
-public enum DeltaSide: Hashable, Comparable, Sendable, BitwiseCopyable, LosslessStringConvertible {
+public enum DeltaSide: String, Hashable, Comparable, Sendable, BitwiseCopyable, LosslessStringConvertible {
 	case source
 	case target
 	
 	public init?(_ description: String) {
-		switch description {
-		case "source":
-			self = .source
-		case "target":
-			self = .target
-		default:
-			return nil
-		}
+		self.init(rawValue: description)
 	}
 	
 	/// The opposite side.
@@ -39,11 +32,12 @@ public enum DeltaSide: Hashable, Comparable, Sendable, BitwiseCopyable, Lossless
 		}
 	}
 	
+	public static func < (lhs: Self, rhs: Self) -> Bool {
+		lhs == .source && rhs == .target
+	}
+	
 	public var description: String {
-		switch self {
-		case .source: "source"
-		case .target: "target"
-		}
+		self.rawValue
 	}
 }
 
