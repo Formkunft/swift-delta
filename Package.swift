@@ -14,5 +14,5 @@ let package = Package(
 		.testTarget(
 			name: "DeltaTests",
 			dependencies: ["DeltaModule"]),
-	]
+	],
 )

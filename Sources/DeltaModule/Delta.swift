@@ -100,7 +100,7 @@ extension Delta where Element: ~Copyable {
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
 	public consuming func map<E, T: ~Copyable>(
-		_ transform: (consuming Element) throws(E) -> T
+		_ transform: (consuming Element) throws(E) -> T,
 	) throws(E) -> Delta<T> {
 		switch consume self {
 		case .source(let source):
@@ -115,7 +115,7 @@ extension Delta where Element: ~Copyable {
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
 	@inlinable
 	public consuming func mapAny<E, T: ~Copyable>(
-		_ transform: (consuming Element) throws(E) -> T?
+		_ transform: (consuming Element) throws(E) -> T?,
 	) throws(E) -> Delta<T>? {
 		switch consume self {
 		case .source(let source):
@@ -151,7 +151,7 @@ extension Delta where Element: ~Copyable {
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
 	@inlinable
 	public consuming func mapAll<E, T: ~Copyable>(
-		_ transform: (consuming Element) throws(E) -> T?
+		_ transform: (consuming Element) throws(E) -> T?,
 	) throws(E) -> Delta<T>? {
 		switch consume self {
 		case .source(let source):
@@ -243,7 +243,7 @@ extension Delta where Element: ~Copyable {
 	/// `merge` is called only in the transition case.
 	@inlinable
 	public consuming func coalesce<E>(
-		_ merge: (_ source: consuming Element, _ target: consuming Element) throws(E) -> Element
+		_ merge: (_ source: consuming Element, _ target: consuming Element) throws(E) -> Element,
 	) throws(E) -> Element {
 		switch consume self {
 		case .source(let source):
@@ -279,7 +279,7 @@ extension Delta where Element: ~Copyable {
 	/// ```
 	@inlinable
 	public func isIdentity<E>(
-		by predicate: (_ source: borrowing Element, _ target: borrowing Element) throws(E) -> Bool
+		by predicate: (_ source: borrowing Element, _ target: borrowing Element) throws(E) -> Bool,
 	) throws(E) -> Bool {
 		switch self {
 		case .source(_):
@@ -483,7 +483,7 @@ extension Delta: Copyable where Element: Copyable {
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMap<E, T>(
-		_ transform: @Sendable (Element) async throws(E) -> T
+		_ transform: @Sendable (Element) async throws(E) -> T,
 	) async throws(E) -> Delta<T> where Element: Sendable {
 		switch self {
 		case .source(let source):
@@ -511,7 +511,7 @@ extension Delta: Copyable where Element: Copyable {
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMapAny<E, T>(
-		_ transform: @Sendable (Element) async throws(E) -> T?
+		_ transform: @Sendable (Element) async throws(E) -> T?,
 	) async throws(E) -> Delta<T>? where Element: Sendable {
 		switch self {
 		case .source(let source):
@@ -558,7 +558,7 @@ extension Delta: Copyable where Element: Copyable {
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
 	@inlinable
 	public func asyncMapAll<E, T>(
-		_ transform: @Sendable (Element) async throws(E) -> T?
+		_ transform: @Sendable (Element) async throws(E) -> T?,
 	) async throws(E) -> Delta<T>? where Element: Sendable {
 		switch self {
 		case .source(let source):
