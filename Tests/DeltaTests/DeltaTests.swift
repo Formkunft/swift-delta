@@ -17,6 +17,41 @@
 import Testing
 import DeltaModule
 
+@Test func `init source target`() {
+	let d = Delta(source: 1, target: 2)
+	#expect(d == .transition(source: 1, target: 2))
+}
+
+@Test func `init optional source`() {
+	let d1 = Delta(source: nil as Int?, target: 2)
+	#expect(d1 == .target(2))
+	
+	let d2 = Delta(source: 1 as Int?, target: 2)
+	#expect(d2 == .transition(source: 1, target: 2))
+}
+
+@Test func `init optional target`() {
+	let d1 = Delta(source: 1, target: nil as Int?)
+	#expect(d1 == .source(1))
+	
+	let d2 = Delta(source: 1, target: 2 as Int?)
+	#expect(d2 == .transition(source: 1, target: 2))
+}
+
+@Test func `init both optional`() {
+	let d1 = Delta(source: nil as Int?, target: nil as Int?)
+	#expect(d1 == nil)
+	
+	let d2 = Delta(source: 1 as Int?, target: nil as Int?)
+	#expect(d2 == .source(1))
+	
+	let d3 = Delta(source: nil as Int?, target: 2 as Int?)
+	#expect(d3 == .target(2))
+	
+	let d4 = Delta(source: 1 as Int?, target: 2 as Int?)
+	#expect(d4 == .transition(source: 1, target: 2))
+}
+
 @Test func `first non-nil map`() {
 	let d1 = Delta.source(3)
 	#expect(d1.firstNonNilMap({ "\($0)" }) == "3")
