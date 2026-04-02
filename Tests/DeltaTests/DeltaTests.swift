@@ -17,7 +17,7 @@
 import Testing
 import DeltaModule
 
-@Test func firstNonNilMap() {
+@Test func `first non-nil map`() {
 	let d1 = Delta.source(3)
 	#expect(d1.firstNonNilMap({ "\($0)" }) == "3")
 	#expect(d1.firstNonNilMap({ _ -> String? in nil }) == nil)
@@ -37,7 +37,7 @@ import DeltaModule
 	#expect(d3.firstNonNilMap({ _ -> String? in nil }) == nil)
 }
 
-@Test func lastNonNilMap() {
+@Test func `last non-nil map`() {
 	let d1 = Delta.source(3)
 	#expect(d1.lastNonNilMap({ "\($0)" }) == "3")
 	#expect(d1.lastNonNilMap({ _ -> String? in nil }) == nil)
@@ -110,7 +110,7 @@ import DeltaModule
 	#expect(delta6 == nil)
 }
 
-@Test func composeMultiple() {
+@Test func `compose multiple`() {
 	let delta1 = Delta.source(3).compose(with: .source(5), .source(7))
 	#expect(delta1 != nil)
 	#expect(delta1!.source! == (3, 5, 7))
@@ -155,7 +155,7 @@ import DeltaModule
 	#expect(delta3 == .transition(source: 2, target: 4))
 }
 
-@Test func asyncMap() async {
+@Test func `async map`() async {
 	let delta1 = await Delta.source(3).asyncMap { $0 * 2 }
 	#expect(delta1 == .source(6))
 	
@@ -166,7 +166,7 @@ import DeltaModule
 	#expect(delta3 == .transition(source: 2, target: 4))
 }
 
-@Test func mapAny() {
+@Test func `map any`() {
 	let delta1 = Delta.source(3).mapAny {
 		if $0 > 0 { $0 * 2 } else { nil }
 	}
@@ -208,7 +208,7 @@ import DeltaModule
 	#expect(delta8 == nil)
 }
 
-@Test func asyncMapAny() async {
+@Test func `async map any`() async {
 	let delta1 = await Delta.source(3).asyncMapAny {
 		if $0 > 0 { $0 * 2 } else { nil }
 	}
@@ -250,7 +250,7 @@ import DeltaModule
 	#expect(delta8 == nil)
 }
 
-@Test func mapAll() {
+@Test func `map all`() {
 	let delta1 = Delta.source(3).mapAll {
 		if $0 > 0 { $0 * 2 } else { nil }
 	}
@@ -292,7 +292,7 @@ import DeltaModule
 	#expect(delta8 == nil)
 }
 
-@Test func asyncMapAll() async {
+@Test func `async map all`() async {
 	let delta1 = await Delta.source(3).asyncMapAll {
 		if $0 > 0 { $0 * 2 } else { nil }
 	}
@@ -334,7 +334,7 @@ import DeltaModule
 	#expect(delta8 == nil)
 }
 
-@Test func isIdentity() {
+@Test func `is identity`() {
 	let delta1 = Delta.identity(5)
 	#expect(delta1.isIdentity { $0 == $1 })
 	
@@ -354,7 +354,7 @@ import DeltaModule
 	#expect(!delta6.isIdentity())
 }
 
-@Test func firstLast() {
+@Test func `first and last`() {
 	let d1 = Delta.source(3)
 	#expect(d1.first == 3)
 	#expect(d1.last == 3)
@@ -435,7 +435,7 @@ import Foundation
 	#expect(d3[d3.index(after: d3.startIndex)] == 5)
 }
 
-@Test func distanceTo() {
+@Test func `distance to`() {
 	let d1 = Delta.source(3)
 	#expect(d1.startIndex.distance(to: d1.endIndex) == 1)
 	#expect(d1.endIndex.distance(to: d1.startIndex) == -1)
@@ -450,7 +450,7 @@ import Foundation
 	#expect(d3.startIndex.distance(to: d3.index(after: d3.startIndex)) == 1)
 }
 
-@Test func bidirectionalCollection() {
+@Test func `bidirectional collection`() {
 	let d1 = Delta.source(3)
 	#expect(d1.last == 3)
 	#expect(d1[d1.index(before: d1.endIndex)] == 3)
@@ -514,7 +514,7 @@ import Foundation
 	#expect(d3[...][...][...].elementsEqual([3, 5]))
 }
 
-@Test func deltaSideInit() {
+@Test func `delta side init`() {
 	#expect(DeltaSide("source") == .source)
 	#expect(DeltaSide("target") == .target)
 	#expect(DeltaSide("other") == nil)
