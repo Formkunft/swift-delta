@@ -26,6 +26,11 @@
 - ``Delta/Side``
 - ``subscript(_:)-8cq40``
 
+### Reversing
+
+- ``reverse()``
+- ``reversed()``
+
 ### Resolving to a Single Element
 
 - ``first``

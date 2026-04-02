@@ -52,6 +52,26 @@ import DeltaModule
 	#expect(d4 == .transition(source: 1, target: 2))
 }
 
+@Test func reversed() {
+	#expect(Delta.source(3).reversed() == .target(3))
+	#expect(Delta.target(5).reversed() == .source(5))
+	#expect(Delta.transition(source: 3, target: 5).reversed() == .transition(source: 5, target: 3))
+}
+
+@Test func reverse() {
+	var d1 = Delta.source(3)
+	d1.reverse()
+	#expect(d1 == .target(3))
+	
+	var d2 = Delta.target(5)
+	d2.reverse()
+	#expect(d2 == .source(5))
+	
+	var d3 = Delta.transition(source: 3, target: 5)
+	d3.reverse()
+	#expect(d3 == .transition(source: 5, target: 3))
+}
+
 @Test func `first non-nil map`() {
 	let d1 = Delta.source(3)
 	#expect(d1.firstNonNilMap({ "\($0)" }) == "3")

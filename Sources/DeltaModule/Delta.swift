@@ -97,6 +97,33 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
+	/// Swaps the source and target sides of the delta in place.
+	///
+	/// - A source delta becomes a target delta.
+	/// - A target delta becomes a source delta.
+	/// - A transition delta has its source and target elements swapped.
+	@inlinable
+	public mutating func reverse() {
+		self = (consume self).reversed()
+	}
+	
+	/// Returns a delta with the source and target sides swapped.
+	///
+	/// - A source delta becomes a target delta.
+	/// - A target delta becomes a source delta.
+	/// - A transition delta has its source and target elements swapped.
+	@inlinable
+	public consuming func reversed() -> Delta {
+		switch consume self {
+		case .source(let element):
+			.target(element)
+		case .target(let element):
+			.source(element)
+		case .transition(let source, let target):
+			.transition(source: target, target: source)
+		}
+	}
+	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
 	public consuming func map<E, T: ~Copyable>(
