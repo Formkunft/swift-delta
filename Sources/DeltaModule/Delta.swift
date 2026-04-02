@@ -504,7 +504,7 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
-	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
+	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
 	///
 	/// In the transition case, both elements are transformed concurrently.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
@@ -551,7 +551,7 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
-	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for all elements.
+	/// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `nil`, if the closure returns `nil` for any element.
 	///
 	/// In the transition case, both elements are transformed concurrently.
 	@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, watchOS 6, *)
