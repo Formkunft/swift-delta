@@ -10,7 +10,7 @@ Swift Delta is a package for a type `Delta<Element>` with three cases:
 
 ***
 
-- [Documentation](https://swiftpackageindex.com/Formkunft/swift-delta/documentation/deltamodule)
+- [Documentation](https://swiftpackageindex.com/Formkunft/swift-delta/documentation/delta)
 - [Swift Package Index](https://swiftpackageindex.com/Formkunft/swift-delta)
 
 ## Description

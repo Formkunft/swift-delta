@@ -15,7 +15,7 @@
 //
 
 import Testing
-import DeltaModule
+import Delta
 
 @Test func `init source target`() {
 	let d = Delta(source: 1, target: 2)

@@ -5,14 +5,14 @@ let package = Package(
 	name: "swift-delta",
 	products: [
 		.library(
-			name: "DeltaModule",
-			targets: ["DeltaModule"]),
+			name: "Delta",
+			targets: ["Delta"]),
 	],
 	targets: [
 		.target(
-			name: "DeltaModule"),
+			name: "Delta"),
 		.testTarget(
 			name: "DeltaTests",
-			dependencies: ["DeltaModule"]),
+			dependencies: ["Delta"]),
 	],
 )
