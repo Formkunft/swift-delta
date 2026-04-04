@@ -451,29 +451,29 @@ import Foundation
 	
 	let jsonDataDeleted = try encoder.encode(Delta.source(3))
 	let jsonDeleted = String(decoding: jsonDataDeleted, as: UTF8.self)
-	#expect(jsonDeleted == #"{"source":3}"#)
-	
+	#expect(jsonDeleted == #"{"a":3}"#)
+
 	let jsonDataAdded = try encoder.encode(Delta.target(5))
 	let jsonAdded = String(decoding: jsonDataAdded, as: UTF8.self)
-	#expect(jsonAdded == #"{"target":5}"#)
-	
+	#expect(jsonAdded == #"{"b":5}"#)
+
 	let jsonDataModified = try encoder.encode(Delta.transition(source: 3, target: 5))
 	let jsonModified = String(decoding: jsonDataModified, as: UTF8.self)
-	#expect(jsonModified == #"{"source":3,"target":5}"#)
+	#expect(jsonModified == #"{"a":3,"b":5}"#)
 }
 
 @Test func decoding() async throws {
 	let decoder = JSONDecoder()
 	
-	let jsonDataDeleted = Data(#"{"source":3}"#.utf8)
+	let jsonDataDeleted = Data(#"{"a":3}"#.utf8)
 	let deltaDeleted = try decoder.decode(Delta<Int>.self, from: jsonDataDeleted)
 	#expect(deltaDeleted == .source(3))
-	
-	let jsonDataAdded = Data(#"{"target":5}"#.utf8)
+
+	let jsonDataAdded = Data(#"{"b":5}"#.utf8)
 	let deltaAdded = try decoder.decode(Delta<Int>.self, from: jsonDataAdded)
 	#expect(deltaAdded == .target(5))
-	
-	let jsonDataModified = Data(#"{"source":3,"target":5}"#.utf8)
+
+	let jsonDataModified = Data(#"{"a":3,"b":5}"#.utf8)
 	let deltaModified = try decoder.decode(Delta<Int>.self, from: jsonDataModified)
 	#expect(deltaModified == .transition(source: 3, target: 5))
 	
