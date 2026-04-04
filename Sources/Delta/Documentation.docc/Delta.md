@@ -1,4 +1,4 @@
-# ``Delta``
+# ``Delta::Delta``
 
 ## Topics
 
