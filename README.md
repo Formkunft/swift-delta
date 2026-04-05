@@ -6,7 +6,7 @@ Swift Delta is a package for a type `Delta<Element>` with three cases:
 
 - `source(Element)`
 - `target(Element)`
-- `transition(source: Element, target: Element)`
+- `pair(source: Element, target: Element)`
 
 ***
 

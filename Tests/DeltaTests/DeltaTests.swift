@@ -19,7 +19,7 @@ import Delta
 
 @Test func `init source target`() {
 	let d = Delta(source: 1, target: 2)
-	#expect(d == .transition(source: 1, target: 2))
+	#expect(d == .pair(source: 1, target: 2))
 }
 
 @Test func `init optional source`() {
@@ -27,7 +27,7 @@ import Delta
 	#expect(d1 == .target(2))
 	
 	let d2 = Delta(source: 1 as Int?, target: 2)
-	#expect(d2 == .transition(source: 1, target: 2))
+	#expect(d2 == .pair(source: 1, target: 2))
 }
 
 @Test func `init optional target`() {
@@ -35,7 +35,7 @@ import Delta
 	#expect(d1 == .source(1))
 	
 	let d2 = Delta(source: 1, target: 2 as Int?)
-	#expect(d2 == .transition(source: 1, target: 2))
+	#expect(d2 == .pair(source: 1, target: 2))
 }
 
 @Test func `init both optional`() {
@@ -49,13 +49,13 @@ import Delta
 	#expect(d3 == .target(2))
 	
 	let d4 = Delta(source: 1 as Int?, target: 2 as Int?)
-	#expect(d4 == .transition(source: 1, target: 2))
+	#expect(d4 == .pair(source: 1, target: 2))
 }
 
 @Test func reversed() {
 	#expect(Delta.source(3).reversed() == .target(3))
 	#expect(Delta.target(5).reversed() == .source(5))
-	#expect(Delta.transition(source: 3, target: 5).reversed() == .transition(source: 5, target: 3))
+	#expect(Delta.pair(source: 3, target: 5).reversed() == .pair(source: 5, target: 3))
 }
 
 @Test func reverse() {
@@ -67,9 +67,9 @@ import Delta
 	d2.reverse()
 	#expect(d2 == .source(5))
 	
-	var d3 = Delta.transition(source: 3, target: 5)
+	var d3 = Delta.pair(source: 3, target: 5)
 	d3.reverse()
-	#expect(d3 == .transition(source: 5, target: 3))
+	#expect(d3 == .pair(source: 5, target: 3))
 }
 
 @Test func `first non-nil map`() {
@@ -81,7 +81,7 @@ import Delta
 	#expect(d2.firstNonNilMap({ "\($0)" }) == "5")
 	#expect(d2.firstNonNilMap({ _ -> String? in nil }) == nil)
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	// both non-nil: returns source (first)
 	#expect(d3.firstNonNilMap({ "\($0)" }) == "3")
 	// source nil, target non-nil: returns target
@@ -101,7 +101,7 @@ import Delta
 	#expect(d2.lastNonNilMap({ "\($0)" }) == "5")
 	#expect(d2.lastNonNilMap({ _ -> String? in nil }) == nil)
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	// both non-nil: returns target (last)
 	#expect(d3.lastNonNilMap({ "\($0)" }) == "5")
 	// target nil, source non-nil: returns source
@@ -125,10 +125,10 @@ import Delta
 	let element4 = Delta.target(5).resolve(favoring: .target)
 	#expect(element4 == 5)
 	
-	let element5 = Delta.transition(source: 3, target: 5).resolve(favoring: .source)
+	let element5 = Delta.pair(source: 3, target: 5).resolve(favoring: .source)
 	#expect(element5 == 3)
 	
-	let element6 = Delta.transition(source: 3, target: 5).resolve(favoring: .target)
+	let element6 = Delta.pair(source: 3, target: 5).resolve(favoring: .target)
 	#expect(element6 == 5)
 }
 
@@ -139,7 +139,7 @@ import Delta
 	let element2 = Delta.target(5).coalesce { $0 + $1 }
 	#expect(element2 == 5)
 	
-	let element3 = Delta.transition(source: 3, target: 5).coalesce { $0 + $1 }
+	let element3 = Delta.pair(source: 3, target: 5).coalesce { $0 + $1 }
 	#expect(element3 == 8)
 }
 
@@ -155,13 +155,13 @@ import Delta
 	let delta3 = Delta.source(3).compose(with: .target(3))
 	#expect(delta3 == nil)
 	
-	let delta4 = Delta.source(3).compose(with: .transition(source: 3, target: 3))
+	let delta4 = Delta.source(3).compose(with: .pair(source: 3, target: 3))
 	#expect(delta4 == nil)
 	
 	let delta5 = Delta.target(3).compose(with: .source(3))
 	#expect(delta5 == nil)
 	
-	let delta6 = Delta.transition(source: 3, target: 3).compose(with: .source(3))
+	let delta6 = Delta.pair(source: 3, target: 3).compose(with: .source(3))
 	#expect(delta6 == nil)
 }
 
@@ -180,10 +180,10 @@ import Delta
 	let delta4 = Delta.source(3).compose(with: .target(3), .source(3))
 	#expect(delta4 == nil)
 	
-	let delta5 = Delta.source(3).compose(with: .source(3), .transition(source: 3, target: 3))
+	let delta5 = Delta.source(3).compose(with: .source(3), .pair(source: 3, target: 3))
 	#expect(delta5 == nil)
 	
-	let delta6 = Delta.source(3).compose(with: .transition(source: 3, target: 3), .source(3))
+	let delta6 = Delta.source(3).compose(with: .pair(source: 3, target: 3), .source(3))
 	#expect(delta6 == nil)
 	
 	let delta7 = Delta.target(3).compose(with: .target(3), .source(3))
@@ -192,10 +192,10 @@ import Delta
 	let delta8 = Delta.target(3).compose(with: .source(3), .target(3))
 	#expect(delta8 == nil)
 	
-	let delta9 = Delta.transition(source: 3, target: 3).compose(with: .transition(source: 3, target: 3), .source(3))
+	let delta9 = Delta.pair(source: 3, target: 3).compose(with: .pair(source: 3, target: 3), .source(3))
 	#expect(delta9 == nil)
 	
-	let delta10 = Delta.transition(source: 3, target: 3).compose(with: .source(3), .transition(source: 3, target: 3))
+	let delta10 = Delta.pair(source: 3, target: 3).compose(with: .source(3), .pair(source: 3, target: 3))
 	#expect(delta10 == nil)
 }
 
@@ -206,8 +206,8 @@ import Delta
 	let delta2 = Delta.target(5).map { $0 + 1 }
 	#expect(delta2 == .target(6))
 	
-	let delta3 = Delta.transition(source: 3, target: 5).map { $0 - 1 }
-	#expect(delta3 == .transition(source: 2, target: 4))
+	let delta3 = Delta.pair(source: 3, target: 5).map { $0 - 1 }
+	#expect(delta3 == .pair(source: 2, target: 4))
 }
 
 @Test func `async map`() async {
@@ -217,8 +217,8 @@ import Delta
 	let delta2 = await Delta.target(5).asyncMap { $0 + 1 }
 	#expect(delta2 == .target(6))
 	
-	let delta3 = await Delta.transition(source: 3, target: 5).asyncMap { $0 - 1 }
-	#expect(delta3 == .transition(source: 2, target: 4))
+	let delta3 = await Delta.pair(source: 3, target: 5).asyncMap { $0 - 1 }
+	#expect(delta3 == .pair(source: 2, target: 4))
 }
 
 @Test func `map any`() {
@@ -242,22 +242,22 @@ import Delta
 	}
 	#expect(delta4 == nil)
 	
-	let delta5 = Delta.transition(source: 3, target: 5).mapAny {
+	let delta5 = Delta.pair(source: 3, target: 5).mapAny {
 		if $0 > 0 { $0 - 1 } else { nil }
 	}
-	#expect(delta5 == .transition(source: 2, target: 4))
+	#expect(delta5 == .pair(source: 2, target: 4))
 	
-	let delta6 = Delta.transition(source: 3, target: 5).mapAny {
+	let delta6 = Delta.pair(source: 3, target: 5).mapAny {
 		if $0 > 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta6 == .target(4))
 	
-	let delta7 = Delta.transition(source: 3, target: 5).mapAny {
+	let delta7 = Delta.pair(source: 3, target: 5).mapAny {
 		if $0 < 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta7 == .source(2))
 	
-	let delta8 = Delta.transition(source: 3, target: 5).mapAny {
+	let delta8 = Delta.pair(source: 3, target: 5).mapAny {
 		if $0 > 10 { $0 - 1 } else { nil }
 	}
 	#expect(delta8 == nil)
@@ -284,22 +284,22 @@ import Delta
 	}
 	#expect(delta4 == nil)
 	
-	let delta5 = await Delta.transition(source: 3, target: 5).asyncMapAny {
+	let delta5 = await Delta.pair(source: 3, target: 5).asyncMapAny {
 		if $0 > 0 { $0 - 1 } else { nil }
 	}
-	#expect(delta5 == .transition(source: 2, target: 4))
+	#expect(delta5 == .pair(source: 2, target: 4))
 	
-	let delta6 = await Delta.transition(source: 3, target: 5).asyncMapAny {
+	let delta6 = await Delta.pair(source: 3, target: 5).asyncMapAny {
 		if $0 > 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta6 == .target(4))
 	
-	let delta7 = await Delta.transition(source: 3, target: 5).asyncMapAny {
+	let delta7 = await Delta.pair(source: 3, target: 5).asyncMapAny {
 		if $0 < 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta7 == .source(2))
 	
-	let delta8 = await Delta.transition(source: 3, target: 5).asyncMapAny {
+	let delta8 = await Delta.pair(source: 3, target: 5).asyncMapAny {
 		if $0 > 10 { $0 - 1 } else { nil }
 	}
 	#expect(delta8 == nil)
@@ -326,22 +326,22 @@ import Delta
 	}
 	#expect(delta4 == nil)
 	
-	let delta5 = Delta.transition(source: 3, target: 5).mapAll {
+	let delta5 = Delta.pair(source: 3, target: 5).mapAll {
 		if $0 > 0 { $0 - 1 } else { nil }
 	}
-	#expect(delta5 == .transition(source: 2, target: 4))
+	#expect(delta5 == .pair(source: 2, target: 4))
 	
-	let delta6 = Delta.transition(source: 3, target: 5).mapAll {
+	let delta6 = Delta.pair(source: 3, target: 5).mapAll {
 		if $0 > 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta6 == nil)
 	
-	let delta7 = Delta.transition(source: 3, target: 5).mapAll {
+	let delta7 = Delta.pair(source: 3, target: 5).mapAll {
 		if $0 < 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta7 == nil)
 	
-	let delta8 = Delta.transition(source: 3, target: 5).mapAll {
+	let delta8 = Delta.pair(source: 3, target: 5).mapAll {
 		if $0 > 10 { $0 - 1 } else { nil }
 	}
 	#expect(delta8 == nil)
@@ -356,14 +356,14 @@ import Delta
 	#expect(Delta.target(5 as Int?).compacted() == .target(5))
 	#expect(Delta.target(nil as Int?).compacted() == nil)
 	
-	// transition: both non-nil
-	#expect(Delta.transition(source: 3 as Int?, target: 5 as Int?).compacted() == .transition(source: 3, target: 5))
-	// transition: source nil
-	#expect(Delta.transition(source: nil as Int?, target: 5 as Int?).compacted() == .target(5))
-	// transition: target nil
-	#expect(Delta.transition(source: 3 as Int?, target: nil as Int?).compacted() == .source(3))
-	// transition: both nil
-	#expect(Delta.transition(source: nil as Int?, target: nil as Int?).compacted() == nil)
+	// pair: both non-nil
+	#expect(Delta.pair(source: 3 as Int?, target: 5 as Int?).compacted() == .pair(source: 3, target: 5))
+	// pair: source nil
+	#expect(Delta.pair(source: nil as Int?, target: 5 as Int?).compacted() == .target(5))
+	// pair: target nil
+	#expect(Delta.pair(source: 3 as Int?, target: nil as Int?).compacted() == .source(3))
+	// pair: both nil
+	#expect(Delta.pair(source: nil as Int?, target: nil as Int?).compacted() == nil)
 }
 
 @Test func `async map all`() async {
@@ -387,22 +387,22 @@ import Delta
 	}
 	#expect(delta4 == nil)
 	
-	let delta5 = await Delta.transition(source: 3, target: 5).asyncMapAll {
+	let delta5 = await Delta.pair(source: 3, target: 5).asyncMapAll {
 		if $0 > 0 { $0 - 1 } else { nil }
 	}
-	#expect(delta5 == .transition(source: 2, target: 4))
+	#expect(delta5 == .pair(source: 2, target: 4))
 	
-	let delta6 = await Delta.transition(source: 3, target: 5).asyncMapAll {
+	let delta6 = await Delta.pair(source: 3, target: 5).asyncMapAll {
 		if $0 > 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta6 == nil)
 	
-	let delta7 = await Delta.transition(source: 3, target: 5).asyncMapAll {
+	let delta7 = await Delta.pair(source: 3, target: 5).asyncMapAll {
 		if $0 < 4 { $0 - 1 } else { nil }
 	}
 	#expect(delta7 == nil)
 	
-	let delta8 = await Delta.transition(source: 3, target: 5).asyncMapAll {
+	let delta8 = await Delta.pair(source: 3, target: 5).asyncMapAll {
 		if $0 > 10 { $0 - 1 } else { nil }
 	}
 	#expect(delta8 == nil)
@@ -412,7 +412,7 @@ import Delta
 	let delta1 = Delta.identity(5)
 	#expect(delta1.isIdentity { $0 == $1 })
 	
-	let delta2 = Delta.transition(source: -5, target: 5)
+	let delta2 = Delta.pair(source: -5, target: 5)
 	#expect(delta2.isIdentity { abs($0) == abs($1) })
 	
 	let delta3 = Delta.target(5)
@@ -421,7 +421,7 @@ import Delta
 	let delta4 = Delta.identity(5)
 	#expect(delta4.isIdentity())
 	
-	let delta5 = Delta.transition(source: 5, target: 5)
+	let delta5 = Delta.pair(source: 5, target: 5)
 	#expect(delta5.isIdentity())
 	
 	let delta6 = Delta.target(5)
@@ -437,7 +437,7 @@ import Delta
 	#expect(d2.first == 5)
 	#expect(d2.last == 5)
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	#expect(d3.first == 3)
 	#expect(d3.last == 5)
 }
@@ -457,7 +457,7 @@ import Foundation
 	let jsonAdded = String(decoding: jsonDataAdded, as: UTF8.self)
 	#expect(jsonAdded == #"{"b":5}"#)
 
-	let jsonDataModified = try encoder.encode(Delta.transition(source: 3, target: 5))
+	let jsonDataModified = try encoder.encode(Delta.pair(source: 3, target: 5))
 	let jsonModified = String(decoding: jsonDataModified, as: UTF8.self)
 	#expect(jsonModified == #"{"a":3,"b":5}"#)
 }
@@ -475,7 +475,7 @@ import Foundation
 
 	let jsonDataModified = Data(#"{"a":3,"b":5}"#.utf8)
 	let deltaModified = try decoder.decode(Delta<Int>.self, from: jsonDataModified)
-	#expect(deltaModified == .transition(source: 3, target: 5))
+	#expect(deltaModified == .pair(source: 3, target: 5))
 	
 	let jsonDataEmpty = Data("{}".utf8)
 	#expect(throws: DecodingError.self, performing: { try decoder.decode(Delta<Int>.self, from: jsonDataEmpty) })
@@ -489,7 +489,7 @@ import Foundation
 	let d2 = Delta.target(5)
 	#expect(Array(d2) == [5])
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	#expect(Array(d3) == [3, 5])
 	#expect(d3.starts(with: d1))
 }
@@ -503,7 +503,7 @@ import Foundation
 	#expect(d2.first == 5)
 	#expect(d2[d2.startIndex] == 5)
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	#expect(d3.first == 3)
 	#expect(d3[d3.startIndex] == 3)
 	#expect(d3[d3.index(after: d3.startIndex)] == 5)
@@ -518,7 +518,7 @@ import Foundation
 	#expect(d2.startIndex.distance(to: d2.endIndex) == 1)
 	#expect(d2.endIndex.distance(to: d2.startIndex) == -1)
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	#expect(d3.startIndex.distance(to: d3.endIndex) == 2)
 	#expect(d3.endIndex.distance(to: d3.startIndex) == -2)
 	#expect(d3.startIndex.distance(to: d3.index(after: d3.startIndex)) == 1)
@@ -533,7 +533,7 @@ import Foundation
 	#expect(d2.last == 5)
 	#expect(d2[d2.index(before: d2.endIndex)] == 5)
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	#expect(d3.last == 5)
 	#expect(d3[d3.index(before: d3.endIndex)] == 5)
 	#expect(d3[d3.index(before: d3.index(before: d3.endIndex))] == 3)
@@ -570,7 +570,7 @@ import Foundation
 	#expect(d2[...][...].elementsEqual([5]))
 	#expect(d2[...][...][...].elementsEqual([5]))
 	
-	let d3 = Delta.transition(source: 3, target: 5)
+	let d3 = Delta.pair(source: 3, target: 5)
 	let t3 = [
 		(d3.startIndex ..< d3.startIndex, []),
 		(d3.endIndex ..< d3.endIndex, []),

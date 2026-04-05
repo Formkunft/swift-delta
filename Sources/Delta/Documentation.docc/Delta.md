@@ -6,7 +6,7 @@
 
 - ``source(_:)``
 - ``target(_:)``
-- ``transition(source:target:)``
+- ``pair(source:target:)``
 
 ### Initializers
 
@@ -69,3 +69,11 @@
 
 - ``isEmpty``
 - ``count``
+
+## Coding
+
+A delta is encoded as a keyed container with `"a"` (source) and `"b"` (target) keys:
+
+- A source delta is encoded as `{"a": <element>}`.
+- A target delta is encoded as `{"b": <element>}`.
+- A pair delta is encoded as `{"a": <element>, "b": <element>}`.
