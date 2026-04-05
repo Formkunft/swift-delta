@@ -8,6 +8,8 @@ Swift Delta is a package for a type `Delta<Element>` with three cases:
 - `target(Element)`
 - `pair(source: Element, target: Element)`
 
+There is also a `Delta.Pair` type that shares its API with `Delta` but always stores both a source and target element.
+
 ***
 
 - [Documentation](https://swiftpackageindex.com/Formkunft/swift-delta/documentation/delta)
@@ -25,7 +27,7 @@ Both sides are accessible via optional `source` and `target` properties.
 
 There are many convenient methods, including mapping a delta by transforming its elements, composing multiple deltas, coalescing a delta to a single element, and subscripting into either side of a delta.
 
-The `Delta` type also conforms to all standard protocols (depending on the conformances of it’s `Element` type):
+The `Delta` and `Delta.Pair` types also conform to all standard protocols (depending on the conformances of the `Element` type):
 
 - `Equatable`
 - `Hashable`
@@ -38,4 +40,4 @@ The `Delta` type also conforms to all standard protocols (depending on the confo
 - `BitwiseCopyable`
 - `Copyable`
 
-Additionally, `Delta` conforms to `RandomAccessCollection`, allowing for iteration over the elements and many other operations provided by `Sequence`, `Collection`, and `BidirectionalCollection`.
+Additionally, both types conform to `RandomAccessCollection`, allowing for iteration over the elements and many other operations provided by `Sequence`, `Collection`, and `BidirectionalCollection`.

@@ -447,6 +447,17 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
+	/// Returns a pair with the source and target elements, in the pair case; otherwise, `nil`.
+	@inlinable
+	public var pair: Pair? {
+		switch self {
+		case .source(_), .target(_):
+			nil
+		case .pair(source: let source, target: let target):
+			Pair(source: source, target: target)
+		}
+	}
+	
 	/// Returns the element from the specified side, if available; otherwise, `nil`.
 	@inlinable
 	public subscript(_ side: Side) -> Element? {
@@ -1059,54 +1070,5 @@ extension Delta.SubSequence: RandomAccessCollection {
 	@inlinable
 	public subscript(unbounded: UnboundedRange) -> SubSequence {
 		self
-	}
-}
-
-public struct _DeltaIterator<Element>: IteratorProtocol {
-	@usableFromInline
-	let base: Delta<Element>.SubSequence
-	@usableFromInline
-	var index: Delta<Element>.Index
-	
-	@inlinable
-	init(base: Delta<Element>.SubSequence, index: Delta<Element>.Index) {
-		self.base = base
-		self.index = index
-	}
-	
-	@inlinable
-	public mutating func next() -> Element? {
-		switch self.index.step {
-		case .source:
-			guard case .delta(let delta) = self.base else {
-				return nil
-			}
-			switch delta {
-			case .source(let source):
-				self.index = Delta.Index(step: .sentinel)
-				return source
-			case .target(_):
-				preconditionFailure("source index used with target delta")
-			case .pair(source: let source, target: _):
-				self.index = Delta.Index(step: .target)
-				return source
-			}
-		case .target:
-			guard case .delta(let delta) = self.base else {
-				return nil
-			}
-			switch delta {
-			case .source(_):
-				preconditionFailure("target index used with source delta")
-			case .target(let target):
-				self.index = Delta.Index(step: .sentinel)
-				return target
-			case .pair(source: _, target: let target):
-				self.index = Delta.Index(step: .sentinel)
-				return target
-			}
-		case .sentinel:
-			return nil
-		}
 	}
 }
