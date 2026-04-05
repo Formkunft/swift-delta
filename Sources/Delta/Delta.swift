@@ -34,16 +34,16 @@ public enum Delta<Element>: ~Copyable where Element: ~Copyable {
 	case pair(source: Element, target: Element)
 }
 
-public extension Delta where Element: ~Copyable {
+extension Delta where Element: ~Copyable {
 	/// Creates a pair delta.
 	@inlinable @inline(__always)
-	init(source: consuming Element, target: consuming Element) {
+	public init(source: consuming Element, target: consuming Element) {
 		self = .pair(source: source, target: target)
 	}
 	
 	/// Creates a target delta if `source` is `nil`; otherwise, creates a pair delta.
 	@inlinable
-	init(source: consuming Element?, target: consuming Element) {
+	public init(source: consuming Element?, target: consuming Element) {
 		if let source {
 			self = .pair(source: source, target: target)
 		}
@@ -54,7 +54,7 @@ public extension Delta where Element: ~Copyable {
 	
 	/// Creates a source delta if `target` is `nil`; otherwise, creates a pair delta.
 	@inlinable
-	init(source: consuming Element, target: consuming Element?) {
+	public init(source: consuming Element, target: consuming Element?) {
 		if let target {
 			self = .pair(source: source, target: target)
 		}
@@ -70,7 +70,7 @@ public extension Delta where Element: ~Copyable {
 	/// - Else, if the target is non-`nil`, creates a target delta.
 	/// - Otherwise, returns `nil`.
 	@inlinable
-	init?(source: consuming Element?, target: consuming Element?) {
+	public init?(source: consuming Element?, target: consuming Element?) {
 		if source != nil && target != nil {
 			self = .pair(source: source!, target: target!)
 		}
@@ -124,45 +124,6 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
-	/// Removes `nil` elements from a delta with optional elements, returning `nil` if no elements remain.
-	///
-	/// - A source delta with a `nil` element returns `nil`.
-	/// - A target delta with a `nil` element returns `nil`.
-	/// - A pair delta with one `nil` element becomes a source or target delta.
-	/// - A pair delta with both elements `nil` returns `nil`.
-	///
-	/// This is equivalent to ``mapAny(_:)`` with the identity function `{ $0 }` as its argument.
-	@inlinable
-	public consuming func compacted<T>() -> Delta<T>? where T? == Element {
-		switch consume self {
-		case .source(let source):
-			guard let source else {
-				return nil
-			}
-			return .source(source)
-		case .target(let target):
-			guard let target else {
-				return nil
-			}
-			return .target(target)
-		case .pair(let source, let target):
-			if let source {
-				if let target {
-					return .pair(source: source, target: target)
-				}
-				else {
-					return .source(source)
-				}
-			}
-			else if let target {
-				return .target(target)
-			}
-			else {
-				return nil
-			}
-		}
-	}
-	
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	@inlinable
 	public consuming func map<E, T: ~Copyable>(
@@ -199,6 +160,7 @@ extension Delta where Element: ~Copyable {
 		case .pair(let source, let target):
 			let source = try transform(source)
 			let target = try transform(target)
+			
 			return if let source {
 				if let target {
 					.pair(source: source, target: target)
@@ -238,6 +200,45 @@ extension Delta where Element: ~Copyable {
 				return nil
 			}
 			return .pair(source: source, target: target)
+		}
+	}
+	
+	/// Removes `nil` elements from a delta with optional elements, returning `nil` if no elements remain.
+	///
+	/// - A source delta with a `nil` element returns `nil`.
+	/// - A target delta with a `nil` element returns `nil`.
+	/// - A pair delta with one `nil` element becomes a source or target delta.
+	/// - A pair delta with both elements `nil` returns `nil`.
+	///
+	/// This is equivalent to ``mapAny(_:)`` with the identity function `{ $0 }` as its argument.
+	@inlinable
+	public consuming func compacted<T>() -> Delta<T>? where T? == Element {
+		switch consume self {
+		case .source(let source):
+			guard let source else {
+				return nil
+			}
+			return .source(source)
+		case .target(let target):
+			guard let target else {
+				return nil
+			}
+			return .target(target)
+		case .pair(let source, let target):
+			if let source {
+				if let target {
+					return .pair(source: source, target: target)
+				}
+				else {
+					return .source(source)
+				}
+			}
+			else if let target {
+				return .target(target)
+			}
+			else {
+				return nil
+			}
 		}
 	}
 	
@@ -362,7 +363,7 @@ extension Delta where Element: ~Copyable {
 	/// Returns the result of processing an intermediate delta.
 	///
 	/// Within `intermediateContext`, `transform` must be called with an intermediate element.
-	/// An intermediate delta is create from this element (or elements, in case of a pair delta, where `intermediateContext` is called a second time nested in the first call).
+	/// An intermediate delta is created from this element (or elements, in case of a pair delta, where `intermediateContext` is called a second time nested in the first call).
 	/// `process` is passed this intermediate delta and its return value is in turn returned by this method.
 	///
 	/// This mapping to an intermediate delta is helpful in cases where regular mapping would violate the lifetime of an element.
@@ -396,9 +397,9 @@ extension Delta where Element: ~Copyable {
 		// this is escaping to fulfill <https://github.com/swiftlang/swift-evolution/blob/main/proposals/0176-enforce-exclusive-access-to-memory.md#restrictions-on-recursive-uses-of-non-escaping-closures>
 		_ intermediateContext: @escaping (
 			_ element: borrowing Element,
-			_ transform: (I) throws(E) -> T
+			_ transform: (I) throws(E) -> T,
 		) throws(E) -> T,
-		process: (Delta<I>) throws(E) -> T,
+		process: (borrowing Delta<I>) throws(E) -> T,
 	) throws(E) -> T {
 		switch self {
 		case .source(let element):
@@ -596,19 +597,20 @@ extension Delta: Copyable where Element: Copyable {
 			do {
 				async let source = transform(source)
 				async let target = transform(target)
-				return if let source = try await source {
+				
+				if let source = try await source {
 					if let target = try await target {
-						.pair(source: source, target: target)
+						return .pair(source: source, target: target)
 					}
 					else {
-						.source(source)
+						return .source(source)
 					}
 				}
 				else if let target = try await target {
-					.target(target)
+					return .target(target)
 				}
 				else {
-					nil
+					return nil
 				}
 			}
 			catch let error as E {
@@ -660,6 +662,10 @@ extension Delta: Copyable where Element: Copyable {
 	#endif
 }
 
+extension Delta: Sendable where Element: Sendable {}
+
+extension Delta: BitwiseCopyable where Element: BitwiseCopyable {}
+
 extension Delta: Equatable where Element: Equatable {
 	/// Returns whether the delta is of the pair case with the source element equal to the target element.
 	///
@@ -686,9 +692,7 @@ extension Delta: Equatable where Element: Equatable {
 	@inlinable
 	public func isIdentity() -> Bool {
 		switch self {
-		case .source(_):
-			false
-		case .target(_):
+		case .source(_), .target(_):
 			false
 		case .pair(source: let source, target: let target):
 			source == target
@@ -712,8 +716,8 @@ extension Delta: CustomDebugStringConvertible {
 }
 
 #if !$Embedded
-public extension Delta where Element: ~Copyable {
-	enum CodingKeys: String, CodingKey {
+extension Delta where Element: ~Copyable {
+	public enum CodingKeys: String, CodingKey {
 		case source = "a"
 		case target = "b"
 	}
@@ -810,10 +814,6 @@ extension Delta: DecodableWithConfiguration where Element: DecodableWithConfigur
 #endif
 #endif
 
-extension Delta: Sendable where Element: Sendable {}
-
-extension Delta: BitwiseCopyable where Element: BitwiseCopyable {}
-
 extension Delta: RandomAccessCollection {
 	public struct Index: Hashable, Sendable, BitwiseCopyable {
 		@usableFromInline
@@ -833,8 +833,8 @@ extension Delta: RandomAccessCollection {
 	}
 	
 	public enum SubSequence {
-		case empty(Delta<Element>.Index)
-		case delta(Delta<Element>)
+		case empty(Index)
+		case delta(Delta)
 	}
 	
 	public typealias Iterator = _DeltaIterator<Element>
@@ -856,8 +856,7 @@ extension Delta: RandomAccessCollection {
 	@inlinable
 	public var count: Int {
 		switch self {
-		case .source(_): 1
-		case .target(_): 1
+		case .source(_), .target(_): 1
 		case .pair(source: _, target: _): 2
 		}
 	}
@@ -910,9 +909,12 @@ extension Delta: RandomAccessCollection {
 			return target
 		case .pair(let source, let target):
 			switch position.step {
-			case .source: return source
-			case .target: return target
-			case .sentinel: preconditionFailure("index out of bounds")
+			case .source:
+				return source
+			case .target:
+				return target
+			case .sentinel:
+				preconditionFailure("index out of bounds")
 			}
 		}
 	}

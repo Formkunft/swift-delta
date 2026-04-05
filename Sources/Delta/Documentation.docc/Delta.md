@@ -45,10 +45,6 @@
 - ``compose(with:)-iytf``
 - ``compose(with:)-5uwg4``
 
-### Compacting
-
-- ``compacted()``
-
 ### Mapping
 
 - ``map(_:)``
@@ -57,6 +53,7 @@
 - ``asyncMap(_:)``
 - ``asyncMapAny(_:)``
 - ``asyncMapAll(_:)``
+- ``compacted()``
 - ``withIntermediate(_:process:)``
 
 ### Identity Delta
