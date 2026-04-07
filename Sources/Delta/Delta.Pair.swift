@@ -44,9 +44,20 @@ extension Delta.Pair where Element: ~Copyable {
 		}
 		self.init(source: source, target: target)
 	}
-}
-
-extension Delta.Pair where Element: ~Copyable {
+	
+	/// Returns a pair with the source and target elements, in the pair case; otherwise, `nil`.
+	@inlinable
+	public init?(_ delta: consuming Delta) {
+		switch consume delta {
+		case .source(_):
+			return nil
+		case .target(_):
+			return nil
+		case .pair(source: let source, target: let target):
+			self = Delta.Pair(source: source, target: target)
+		}
+	}
+	
 	/// Swaps the source and target sides of the pair in place.
 	@inlinable
 	public mutating func reverse() {
@@ -235,12 +246,6 @@ extension Delta.Pair: Copyable where Element: Copyable {
 	@inlinable
 	public static func identity(_ element: Element) -> Self {
 		.init(source: element, target: element)
-	}
-	
-	/// Returns a pair delta with the elements of this pair.
-	@inlinable
-	public var delta: Delta {
-		.pair(source: self.source, target: self.target)
 	}
 	
 	/// Returns the source and target element as a tuple.
@@ -455,7 +460,7 @@ extension Delta.Pair: RandomAccessCollection {
 	
 	@inlinable
 	public func makeIterator() -> Iterator {
-		Iterator(base: .delta(self.delta), index: self.startIndex)
+		Iterator(base: .delta(Delta(self)), index: self.startIndex)
 	}
 	
 	/// A pair is never empty as it always has 2 elements.
@@ -528,6 +533,6 @@ extension Delta.Pair: RandomAccessCollection {
 	
 	@inlinable
 	public subscript(unbounded: UnboundedRange) -> SubSequence {
-		.delta(self.delta)
+		.delta(Delta(self))
 	}
 }

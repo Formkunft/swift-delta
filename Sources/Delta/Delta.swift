@@ -84,9 +84,13 @@ extension Delta where Element: ~Copyable {
 			return nil
 		}
 	}
-}
-
-extension Delta where Element: ~Copyable {
+	
+	/// Returns a pair delta with the elements of the given pair.
+	@inlinable
+	public init(_ pair: consuming Delta.Pair) {
+		self = .pair(source: pair.source, target: pair.target)
+	}
+	
 	/// Returns the side for source and target deltas and `nil` for pair deltas.
 	@inlinable
 	public var side: Side? {
@@ -486,17 +490,6 @@ extension Delta: Copyable where Element: Copyable {
 		case .source(_): nil
 		case .target(let target): target
 		case .pair(_, let target): target
-		}
-	}
-	
-	/// Returns a pair with the source and target elements, in the pair case; otherwise, `nil`.
-	@inlinable
-	public var pair: Pair? {
-		switch self {
-		case .source(_), .target(_):
-			nil
-		case .pair(source: let source, target: let target):
-			Pair(source: source, target: target)
 		}
 	}
 	

@@ -181,7 +181,7 @@ struct `Delta Pair tests` {
 	
 	@Test func delta() {
 		let p = Delta.Pair(source: 3, target: 5)
-		#expect(p.delta == .pair(source: 3, target: 5))
+		#expect(Delta(p) == .pair(source: 3, target: 5))
 	}
 	
 	@Test func elements() {
