@@ -42,6 +42,11 @@
 - ``compacted()``
 - ``withIntermediate(_:process:)``
 
+### Updating
+
+- ``update(_:)-((Element)->())``
+- ``update(_:)-((Element,Delta.Side)->())``
+
 ### Identity Pair
 
 - ``isIdentity()``

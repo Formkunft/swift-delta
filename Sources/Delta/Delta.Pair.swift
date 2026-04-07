@@ -148,6 +148,28 @@ extension Delta.Pair where Element: ~Copyable {
 		}
 	}
 	
+	/// Modifies the pair by providing mutable access to both sides using a function.
+	///
+	/// The function is first called for the source and then for the target element.
+	@inlinable
+	public mutating func update(
+		_ code: (_ element: inout Element) -> (),
+	) {
+		code(&self.source)
+		code(&self.target)
+	}
+	
+	/// Modifies the pair by providing mutable access to both sides using a function.
+	///
+	/// The function is first called for the source and then for the target element.
+	@inlinable
+	public mutating func update(
+		_ code: (_ element: inout Element, _ side: Delta.Side) -> (),
+	) {
+		code(&self.source, .source)
+		code(&self.target, .target)
+	}
+	
 	/// Returns whether a predicate is true given the source and target elements.
 	///
 	/// - Parameter predicate: The return value of this function is returned by `isIdentity(by:)`.

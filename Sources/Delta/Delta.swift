@@ -324,6 +324,48 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
+	/// Modifies the pair by providing mutable access to both sides using a function.
+	///
+	/// The function is first called for the source and then for the target element.
+	@inlinable
+	public mutating func update(
+		_ code: (_ element: inout Element) -> (),
+	) {
+		switch consume self {
+		case .source(var source):
+			code(&source)
+			self = .source(source)
+		case .target(var target):
+			code(&target)
+			self = .target(target)
+		case .pair(var source, var target):
+			code(&source)
+			code(&target)
+			self = .pair(source: source, target: target)
+		}
+	}
+	
+	/// Modifies the pair by providing mutable access to both sides using a function.
+	///
+	/// The function is first called for the source and then for the target element.
+	@inlinable
+	public mutating func update(
+		_ code: (_ element: inout Element, _ side: Delta.Side) -> (),
+	) {
+		switch consume self {
+		case .source(var source):
+			code(&source, .source)
+			self = .source(source)
+		case .target(var target):
+			code(&target, .target)
+			self = .target(target)
+		case .pair(var source, var target):
+			code(&source, .source)
+			code(&target, .target)
+			self = .pair(source: source, target: target)
+		}
+	}
+	
 	/// Returns whether the delta is of the pair case and a predicate is true given the source and target elements.
 	///
 	/// A source delta or target delta always returns `false` without invoking `predicate`.
