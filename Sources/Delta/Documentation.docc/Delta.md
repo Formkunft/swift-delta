@@ -1,4 +1,4 @@
-# ``Delta::Delta``
+# ``Delta/Delta``
 
 ## Topics
 
@@ -24,7 +24,12 @@
 
 - ``side``
 - ``Delta/Side``
-- ``subscript(_:)-8cq40``
+- ``subscript(_:)->Element?``
+
+### Delta Pair
+
+- ``pair``
+- ``Pair``
 
 ### Reversing
 
@@ -42,8 +47,8 @@
 
 ### Composition
 
-- ``compose(with:)-iytf``
-- ``compose(with:)-5uwg4``
+- ``compose(with:)-8akco``
+- ``compose(with:)-3i3g8``
 
 ### Mapping
 
@@ -71,11 +76,3 @@
 
 - ``isEmpty``
 - ``count``
-
-## Coding
-
-A delta is encoded as a keyed container with `"a"` (source) and `"b"` (target) keys:
-
-- A source delta is encoded as `{"a": <element>}`.
-- A target delta is encoded as `{"b": <element>}`.
-- A pair delta is encoded as `{"a": <element>, "b": <element>}`.

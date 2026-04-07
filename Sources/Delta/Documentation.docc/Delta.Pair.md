@@ -1,11 +1,11 @@
-# ``Delta::Delta/Pair``
+# ``Delta/Delta/Pair``
 
 ## Topics
 
 ### Creating a Pair
 
-- ``init(source:target:)``
-- ``init(source:target:)-5auek``
+- ``init(source:target:)-(Element,_)``
+- ``init(source:target:)-(Element?,_)``
 - ``identity(_:)``
 
 ### Elements
@@ -14,7 +14,7 @@
 - ``target``
 - ``elements``
 - ``delta``
-- ``subscript(_:)``
+- ``subscript(_:)-(Delta.Side)``
 
 ### Reversing
 
@@ -56,11 +56,3 @@
 
 - ``isEmpty``
 - ``count``
-
-## Coding
-
-A pair is encoded as a keyed container with `"a"` (source) and `"b"` (target) keys:
-
-```json
-{"a": <element>, "b": <element>}
-```
