@@ -571,14 +571,14 @@ extension Delta: Copyable where Element: Copyable {
 					return nil
 				}
 			}
-			return .source((e1, repeat (each other).source.unsafelyUnwrapped))
+			return .source((e1, unsafe repeat (each other).source.unsafelyUnwrapped))
 		case .target(let e1):
 			for delta in repeat each other {
 				guard case .target(_) = delta else {
 					return nil
 				}
 			}
-			return .target((e1, repeat (each other).target.unsafelyUnwrapped))
+			return .target((e1, unsafe repeat (each other).target.unsafelyUnwrapped))
 		case .pair(let s1, let t1):
 			for delta in repeat each other {
 				guard case .pair(source: _, target: _) = delta else {
@@ -586,8 +586,8 @@ extension Delta: Copyable where Element: Copyable {
 				}
 			}
 			return .pair(
-				source: (s1, repeat (each other).source.unsafelyUnwrapped),
-				target: (t1, repeat (each other).target.unsafelyUnwrapped))
+				source: (s1, unsafe repeat (each other).source.unsafelyUnwrapped),
+				target: (t1, unsafe repeat (each other).target.unsafelyUnwrapped))
 		}
 	}
 	
