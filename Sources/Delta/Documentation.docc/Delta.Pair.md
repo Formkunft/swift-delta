@@ -6,14 +6,13 @@
 
 - ``init(source:target:)-(Element,_)``
 - ``init(source:target:)-(Element?,_)``
-- ``identity(_:)``
+- ``init(_:)``
 
 ### Elements
 
 - ``source``
 - ``target``
 - ``elements``
-- ``delta``
 - ``subscript(_:)-(Delta.Side)``
 
 ### Reversing
@@ -49,6 +48,7 @@
 
 ### Identity Pair
 
+- ``identity(_:)``
 - ``isIdentity()``
 - ``isIdentity(by:)``
 

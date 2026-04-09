@@ -254,7 +254,7 @@ extension Delta.Pair: Copyable where Element: Copyable {
 		(source: self.source, target: self.target)
 	}
 	
-	/// Accesses the element from the specified side.
+	/// Accesses the element at the specified side.
 	@inlinable
 	public subscript(_ side: Delta.Side) -> Element {
 		set {

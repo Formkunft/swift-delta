@@ -328,9 +328,10 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
-	/// Modifies the pair by providing mutable access to both sides using a function.
+	/// Modifies the delta by providing mutable access to its elements using a function.
 	///
-	/// The function is first called for the source and then for the target element.
+	/// For a source or target delta, the function is called once with the single element.
+	/// For a pair delta, the function is called twice: first with the source element, then with the target element.
 	@inlinable
 	public mutating func update(
 		_ code: (_ element: inout Element) -> (),
@@ -349,9 +350,10 @@ extension Delta where Element: ~Copyable {
 		}
 	}
 	
-	/// Modifies the pair by providing mutable access to both sides using a function.
+	/// Modifies the delta by providing mutable access to its elements using a function.
 	///
-	/// The function is first called for the source and then for the target element.
+	/// For a source or target delta, the function is called once with the single element and its side.
+	/// For a pair delta, the function is called twice: first with the source element, then with the target element.
 	@inlinable
 	public mutating func update(
 		_ code: (_ element: inout Element, _ side: Delta.Side) -> (),
@@ -493,7 +495,7 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
-	/// Returns the element from the specified side, if available; otherwise, `nil`.
+	/// Returns the element at the specified side, if available; otherwise, `nil`.
 	@inlinable
 	public subscript(_ side: Side) -> Element? {
 		switch side {

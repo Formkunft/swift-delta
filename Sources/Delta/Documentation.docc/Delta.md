@@ -28,7 +28,7 @@
 
 ### Delta Pair
 
-- ``pair``
+- ``init(_:)``
 - ``Pair``
 
 ### Reversing
