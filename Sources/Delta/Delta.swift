@@ -71,13 +71,15 @@ extension Delta where Element: ~Copyable {
 	/// - Otherwise, returns `nil`.
 	@inlinable
 	public init?(source: consuming Element?, target: consuming Element?) {
-		if source != nil && target != nil {
-			self = .pair(source: source!, target: target!)
+		if let source {
+			if let target {
+				self = .pair(source: source, target: target)
+			}
+			else {
+				self = .source(source)
+			}
 		}
-		else if let source {
-			self = .source(source)
-		}
-		else if let target {
+		else if let target = target {
 			self = .target(target)
 		}
 		else {

@@ -17,30 +17,31 @@
 public struct _DeltaIterator<Element>: IteratorProtocol {
 	@usableFromInline
 	let base: Delta<Element>.SubSequence
+	/// Once iteration ended, this step may not be valid for indexing into the base sequence.
 	@usableFromInline
-	var index: Delta<Element>.Index
+	var _step: Delta<Element>.Index.Step
 	
 	@inlinable
 	init(base: Delta<Element>.SubSequence, index: Delta<Element>.Index) {
 		self.base = base
-		self.index = index
+		self._step = index.step
 	}
 	
 	@inlinable
 	public mutating func next() -> Element? {
-		switch self.index.step {
+		switch self._step {
 		case .source:
 			guard case .delta(let delta) = self.base else {
 				return nil
 			}
 			switch delta {
 			case .source(let source):
-				self.index = Delta.Index(step: .sentinel)
+				self._step = .sentinel
 				return source
 			case .target(_):
 				preconditionFailure("source index used with target delta")
 			case .pair(source: let source, target: _):
-				self.index = Delta.Index(step: .target)
+				self._step = .target
 				return source
 			}
 		case .target:
@@ -51,10 +52,10 @@ public struct _DeltaIterator<Element>: IteratorProtocol {
 			case .source(_):
 				preconditionFailure("target index used with source delta")
 			case .target(let target):
-				self.index = Delta.Index(step: .sentinel)
+				self._step = .sentinel
 				return target
 			case .pair(source: _, target: let target):
-				self.index = Delta.Index(step: .sentinel)
+				self._step = .sentinel
 				return target
 			}
 		case .sentinel:
