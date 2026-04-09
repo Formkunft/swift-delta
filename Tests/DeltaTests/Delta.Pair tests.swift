@@ -22,7 +22,7 @@ import Foundation
 #endif
 
 @Suite
-struct `Delta Pair tests` {
+struct `Delta.Pair tests` {
 	@Test func `init`() {
 		let p = Delta.Pair(source: 3, target: 5)
 		#expect(p.source == 3)
