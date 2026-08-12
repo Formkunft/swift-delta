@@ -595,6 +595,73 @@ extension Delta: Copyable where Element: Copyable {
 		}
 	}
 	
+	/// Returns a new delta composed of the elements of the two deltas, provided `other` covers the sides of `self`.
+	///
+	/// If `other` has elements for at least the same sides as `self`, those elements are paired and returned in a new delta.
+	/// Otherwise, when `other` has no element for a side of `self`, `nil` is returned.
+	///
+	/// Unlike ``compose(with:)-8akco``, this method is not symmetrical.
+	@inlinable
+	public func compose<T>(
+		subsetting other: Delta<T>,
+	) -> Delta<(Element, T)>? {
+		switch self {
+		case .source(let s1):
+			guard let s2 = other.source else {
+				return nil
+			}
+			return .source((s1, s2))
+		case .target(let t1):
+			guard let t2 = other.target else {
+				return nil
+			}
+			return .target((t1, t2))
+		case .pair(let s1, let t1):
+			guard case .pair(source: let s2, target: let t2) = other else {
+				return nil
+			}
+			return .pair(source: (s1, s2), target: (t1, t2))
+		}
+	}
+	
+	/// Returns a new delta composed of the elements of the deltas, provided all other deltas cover the sides of `self`.
+	///
+	/// If all `other` deltas have elements for at least the same sides as `self`, `self`’s and their elements are packed in tuples and returned in a new delta.
+	/// Otherwise, when any `other` delta has no element for a side of `self`, `nil` is returned.
+	///
+	/// Unlike ``compose(with:)-3i3g8``, this method is not symmetrical.
+	@_disfavoredOverload
+	@inlinable
+	public func compose<each T>(
+		subsetting other: repeat Delta<each T>,
+	) -> Delta<(Element, repeat each T)>? {
+		switch self {
+		case .source(let s1):
+			for delta in repeat each other {
+				if case .target(_) = delta {
+					return nil
+				}
+			}
+			return .source((s1, unsafe repeat (each other).source.unsafelyUnwrapped))
+		case .target(let t1):
+			for delta in repeat each other {
+				if case .source(_) = delta {
+					return nil
+				}
+			}
+			return .target((t1, unsafe repeat (each other).target.unsafelyUnwrapped))
+		case .pair(let s1, let t1):
+			for delta in repeat each other {
+				guard case .pair(source: _, target: _) = delta else {
+					return nil
+				}
+			}
+			return .pair(
+				source: (s1, unsafe repeat (each other).source.unsafelyUnwrapped),
+				target: (t1, unsafe repeat (each other).target.unsafelyUnwrapped))
+		}
+	}
+	
 	#if !$Embedded
 	/// Returns a delta containing the results of mapping the given closure over the delta’s elements.
 	///

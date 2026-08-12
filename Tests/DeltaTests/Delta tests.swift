@@ -205,6 +205,100 @@ struct `Delta tests` {
 		#expect(delta10 == nil)
 	}
 	
+	@Test func `compose subsetting`() {
+		let delta1 = Delta.source(3).compose(subsetting: .source(5))
+		#expect(delta1 != nil)
+		#expect(delta1!.source! == (3, 5))
+		
+		let delta2 = Delta.source(3).compose(subsetting: .source("some string"))
+		#expect(delta2 != nil)
+		#expect(delta2!.source! == (3, "some string"))
+		
+		// pair covers the source side
+		let delta3 = Delta.source(3).compose(subsetting: .pair(source: 5, target: 7))
+		#expect(delta3 != nil)
+		#expect(delta3!.source! == (3, 5))
+		
+		let delta4 = Delta.source(3).compose(subsetting: .target(5))
+		#expect(delta4 == nil)
+		
+		let delta5 = Delta.target(3).compose(subsetting: .target(5))
+		#expect(delta5 != nil)
+		#expect(delta5!.target! == (3, 5))
+		
+		// pair covers the target side
+		let delta6 = Delta.target(3).compose(subsetting: .pair(source: 5, target: 7))
+		#expect(delta6 != nil)
+		#expect(delta6!.target! == (3, 7))
+		
+		let delta7 = Delta.target(3).compose(subsetting: .source(5))
+		#expect(delta7 == nil)
+		
+		let delta8 = Delta.pair(source: 3, target: 5).compose(subsetting: .pair(source: 7, target: 11))
+		#expect(delta8 != nil)
+		#expect(delta8!.source! == (3, 7))
+		#expect(delta8!.target! == (5, 11))
+		
+		// a pair is not covered by a single side
+		let delta9 = Delta.pair(source: 3, target: 5).compose(subsetting: .source(7))
+		#expect(delta9 == nil)
+		
+		let delta10 = Delta.pair(source: 3, target: 5).compose(subsetting: .target(7))
+		#expect(delta10 == nil)
+	}
+	
+	@Test func `compose subsetting multiple`() {
+		let delta1 = Delta.source(3).compose(subsetting: .source(5), .source(7))
+		#expect(delta1 != nil)
+		#expect(delta1!.source! == (3, 5, 7))
+		
+		let delta2 = Delta.source(3).compose(subsetting: .source("some string"), .source([3.14, 1.41]))
+		#expect(delta2 != nil)
+		#expect(delta2!.source! == (3, "some string", [3.14, 1.41]))
+		
+		// pairs cover the source side
+		let delta3 = Delta.source(3).compose(subsetting: .source(5), .pair(source: 7, target: 11))
+		#expect(delta3 != nil)
+		#expect(delta3!.source! == (3, 5, 7))
+		
+		let delta4 = Delta.source(3).compose(subsetting: .pair(source: 5, target: 7), .pair(source: 11, target: 13))
+		#expect(delta4 != nil)
+		#expect(delta4!.source! == (3, 5, 11))
+		
+		let delta5 = Delta.source(3).compose(subsetting: .source(5), .target(7))
+		#expect(delta5 == nil)
+		
+		let delta6 = Delta.source(3).compose(subsetting: .target(5), .source(7))
+		#expect(delta6 == nil)
+		
+		let delta7 = Delta.target(3).compose(subsetting: .target(5), .target(7))
+		#expect(delta7 != nil)
+		#expect(delta7!.target! == (3, 5, 7))
+		
+		// pairs cover the target side
+		let delta8 = Delta.target(3).compose(subsetting: .target(5), .pair(source: 7, target: 11))
+		#expect(delta8 != nil)
+		#expect(delta8!.target! == (3, 5, 11))
+		
+		let delta9 = Delta.target(3).compose(subsetting: .target(5), .source(7))
+		#expect(delta9 == nil)
+		
+		let delta10 = Delta.target(3).compose(subsetting: .source(5), .target(7))
+		#expect(delta10 == nil)
+		
+		let delta11 = Delta.pair(source: 3, target: 5).compose(subsetting: .pair(source: 7, target: 11), .pair(source: 13, target: 17))
+		#expect(delta11 != nil)
+		#expect(delta11!.source! == (3, 7, 13))
+		#expect(delta11!.target! == (5, 11, 17))
+		
+		// a pair is not covered by a single side
+		let delta12 = Delta.pair(source: 3, target: 5).compose(subsetting: .pair(source: 7, target: 11), .source(13))
+		#expect(delta12 == nil)
+		
+		let delta13 = Delta.pair(source: 3, target: 5).compose(subsetting: .target(7), .pair(source: 11, target: 13))
+		#expect(delta13 == nil)
+	}
+	
 	@Test func map() {
 		let delta1 = Delta.source(3).map { $0 * 2 }
 		#expect(delta1 == .source(6))

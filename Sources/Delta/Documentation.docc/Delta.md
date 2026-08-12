@@ -49,6 +49,8 @@
 
 - ``compose(with:)-8akco``
 - ``compose(with:)-3i3g8``
+- ``compose(subsetting:)-6egnq``
+- ``compose(subsetting:)-5cgp6``
 
 ### Mapping
 
