@@ -89,7 +89,7 @@ extension Delta where Element: ~Copyable {
 	
 	/// Returns a pair delta with the elements of the given pair.
 	@inlinable
-	public init(_ pair: consuming Delta.Pair) {
+	public init(_ pair: consuming Pair<Element>) {
 		self = .pair(source: pair.source, target: pair.target)
 	}
 	

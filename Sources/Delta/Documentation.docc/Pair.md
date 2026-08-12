@@ -1,11 +1,13 @@
-# ``Delta/Delta/Pair``
+# ``Pair``
 
 ## Topics
 
 ### Creating a Pair
 
-- ``init(source:target:)-(Element,_)``
-- ``init(source:target:)-(Element?,_)``
+- ``init(source:target:)-(Element,Element)``
+- ``init(source:target:)-(Element?,Element)``
+- ``init(source:target:)-(Element,Element?)``
+- ``init(source:target:)-(Element?,Element?)``
 - ``init(_:)``
 
 ### Elements

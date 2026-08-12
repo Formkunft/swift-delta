@@ -14,28 +14,44 @@
 //  limitations under the License.
 //
 
-extension Delta where Element: ~Copyable {
-	/// A type representing both a source and a target element.
-	@frozen
-	public struct Pair: ~Copyable {
-		/// The type of the elements.
-		public typealias Element = Delta.Element
-		
-		/// A source element.
-		public var source: Element
-		/// A target element.
-		public var target: Element
-		
-		/// Creates a pair.
-		@inlinable
-		public init(source: consuming Element, target: consuming Element) {
-			self.source = source
-			self.target = target
-		}
+/// A type representing both a source and a target element.
+@frozen
+public struct Pair<Element: ~Copyable>: ~Copyable {
+	/// The type of the elements.
+	public typealias Element = Element
+	
+	/// A source element.
+	public var source: Element
+	/// A target element.
+	public var target: Element
+	
+	/// Creates a pair.
+	@inlinable
+	public init(source: consuming Element, target: consuming Element) {
+		self.source = source
+		self.target = target
 	}
 }
 
-extension Delta.Pair where Element: ~Copyable {
+extension Pair where Element: ~Copyable {
+	/// Creates a pair when `source` is non-`nil`; otherwise, returns `nil`.
+	@inlinable
+	public init?(source: consuming Element?, target: consuming Element) {
+		guard let source else {
+			return nil
+		}
+		self.init(source: source, target: target)
+	}
+	
+	/// Creates a pair when `target` is non-`nil`; otherwise, returns `nil`.
+	@inlinable
+	public init?(source: consuming Element, target: consuming Element?) {
+		guard let target else {
+			return nil
+		}
+		self.init(source: source, target: target)
+	}
+	
 	/// Creates a pair when both elements are non-`nil`; otherwise, returns `nil`.
 	@inlinable
 	public init?(source: consuming Element?, target: consuming Element?) {
@@ -47,14 +63,14 @@ extension Delta.Pair where Element: ~Copyable {
 	
 	/// Returns a pair with the source and target elements, in the pair case; otherwise, `nil`.
 	@inlinable
-	public init?(_ delta: consuming Delta) {
+	public init?(_ delta: consuming Delta<Element>) {
 		switch consume delta {
 		case .source(_):
 			return nil
 		case .target(_):
 			return nil
 		case .pair(source: let source, target: let target):
-			self = Delta.Pair(source: source, target: target)
+			self = Pair(source: source, target: target)
 		}
 	}
 	
@@ -66,16 +82,16 @@ extension Delta.Pair where Element: ~Copyable {
 	
 	/// Returns a pair with the source and target sides swapped.
 	@inlinable
-	public consuming func reversed() -> Delta.Pair {
-		.init(source: self.target, target: self.source)
+	public consuming func reversed() -> Pair {
+		Pair(source: self.target, target: self.source)
 	}
 	
 	/// Returns a pair containing the results of mapping the given closure over the pair’s elements.
 	@inlinable
 	public consuming func map<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T,
-	) throws(E) -> Delta<T>.Pair {
-		.init(
+	) throws(E) -> Pair<T> {
+		Pair<T>(
 			source: try transform(self.source),
 			target: try transform(self.target))
 	}
@@ -110,23 +126,23 @@ extension Delta.Pair where Element: ~Copyable {
 	@inlinable
 	public consuming func mapAll<E, T: ~Copyable>(
 		_ transform: (consuming Element) throws(E) -> T?,
-	) throws(E) -> Delta<T>.Pair? {
+	) throws(E) -> Pair<T>? {
 		guard let source = try transform(self.source),
 		      let target = try transform(self.target) else {
 			return nil
 		}
-		return .init(source: source, target: target)
+		return Pair<T>(source: source, target: target)
 	}
 	
 	/// Returns a pair with non-optional elements or `nil`, if any of the elements is `nil`.
 	///
 	/// This is equivalent to ``mapAll(_:)`` with the identity function `{ $0 }` as its argument.
 	@inlinable
-	public consuming func compacted<T>() -> Delta<T>.Pair? where T? == Element {
+	public consuming func compacted<T>() -> Pair<T>? where T? == Element {
 		guard let source, let target else {
 			return nil
 		}
-		return .init(source: source, target: target)
+		return Pair<T>(source: source, target: target)
 	}
 	
 	/// Applies a transformation to the elements in source–target order and returns the first non-`nil` result.
@@ -200,10 +216,10 @@ extension Delta.Pair where Element: ~Copyable {
 	///
 	/// This mapping to an intermediate pair is helpful in cases where regular mapping would violate the lifetime of an element.
 	///
-	/// For example, mapping a `Delta<[UInt8]>.Pair` to a `Delta<UnsafeRawBufferPointer>.Pair` is normally a programming error as the pointer is only valid for the duration of the closure’s execution:
+	/// For example, mapping a `Pair<[UInt8]>` to a `Pair<UnsafeRawBufferPointer>` is normally a programming error as the pointer is only valid for the duration of the closure’s execution:
 	///
 	/// ```swift
-	/// let arrayPair = Delta<[UInt8]>.Pair(source: [0x00], target: [0x00, 0x01])
+	/// let arrayPair = Pair<[UInt8]>(source: [0x00], target: [0x00, 0x01])
 	/// let pointerPair = arrayPair.map { array in
 	///     return array.withUnsafeBytes { $0 }
 	/// }
@@ -231,21 +247,21 @@ extension Delta.Pair where Element: ~Copyable {
 			_ element: borrowing Element,
 			_ transform: (I) throws(E) -> T,
 		) throws(E) -> T,
-		process: (borrowing Delta<I>.Pair) throws(E) -> T,
+		process: (borrowing Pair<I>) throws(E) -> T,
 	) throws(E) -> T {
 		try intermediateContext(self.source) { sourceIntermediate throws(E) in
 			try intermediateContext(self.target) { targetIntermediate throws(E) in
-				try process(.init(source: sourceIntermediate, target: targetIntermediate))
+				try process(Pair<I>(source: sourceIntermediate, target: targetIntermediate))
 			}
 		}
 	}
 }
 
-extension Delta.Pair: Copyable where Element: Copyable {
+extension Pair: Copyable where Element: Copyable {
 	/// Returns a pair where both the source and target share the same element.
 	@inlinable
 	public static func identity(_ element: Element) -> Self {
-		.init(source: element, target: element)
+		Pair(source: element, target: element)
 	}
 	
 	/// Returns the source and target element as a tuple.
@@ -278,9 +294,9 @@ extension Delta.Pair: Copyable where Element: Copyable {
 	/// Returns a new pair composed of the elements of the two pairs.
 	@inlinable
 	public func compose<T>(
-		with other: Delta<T>.Pair,
-	) -> Delta<(Element, T)>.Pair {
-		.init(
+		with other: Pair<T>,
+	) -> Pair<(Element, T)> {
+		Pair<(Element, T)>(
 			source: (self.source, other.source),
 			target: (self.target, other.target))
 	}
@@ -289,9 +305,9 @@ extension Delta.Pair: Copyable where Element: Copyable {
 	@_disfavoredOverload
 	@inlinable
 	public func compose<each T>(
-		with other: repeat Delta<each T>.Pair,
-	) -> Delta<(Element, repeat each T)>.Pair {
-		.init(
+		with other: repeat Pair<each T>,
+	) -> Pair<(Element, repeat each T)> {
+		Pair<(Element, repeat each T)>(
 			source: (self.source, repeat (each other).source),
 			target: (self.target, repeat (each other).target))
 	}
@@ -304,11 +320,11 @@ extension Delta.Pair: Copyable where Element: Copyable {
 	@inlinable
 	public func asyncMap<E, T>(
 		_ transform: @Sendable (Element) async throws(E) -> T,
-	) async throws(E) -> Delta<T>.Pair where Element: Sendable {
+	) async throws(E) -> Pair<T> where Element: Sendable {
 		do {
 			async let transformedSource = transform(self.source)
 			async let transformedTarget = transform(self.target)
-			return try await .init(source: transformedSource, target: transformedTarget)
+			return try await Pair<T>(source: transformedSource, target: transformedTarget)
 		}
 		catch let error as E {
 			throw error
@@ -360,7 +376,7 @@ extension Delta.Pair: Copyable where Element: Copyable {
 	@inlinable
 	public func asyncMapAll<E, T>(
 		_ transform: @Sendable (Element) async throws(E) -> T?,
-	) async throws(E) -> Delta<T>.Pair? where Element: Sendable {
+	) async throws(E) -> Pair<T>? where Element: Sendable {
 		do {
 			async let source = transform(self.source)
 			async let target = transform(self.target)
@@ -368,7 +384,7 @@ extension Delta.Pair: Copyable where Element: Copyable {
 			      let target = try await target else {
 				return nil
 			}
-			return .init(source: source, target: target)
+			return Pair<T>(source: source, target: target)
 		}
 		catch let error as E {
 			throw error
@@ -380,11 +396,11 @@ extension Delta.Pair: Copyable where Element: Copyable {
 	#endif
 }
 
-extension Delta.Pair: Sendable where Element: Sendable {}
+extension Pair: Sendable where Element: Sendable {}
 
-extension Delta.Pair: BitwiseCopyable where Element: BitwiseCopyable {}
+extension Pair: BitwiseCopyable where Element: BitwiseCopyable {}
 
-extension Delta.Pair: Equatable where Element: Equatable {
+extension Pair: Equatable where Element: Equatable {
 	/// Returns whether the source element is equal to the target element.
 	///
 	/// Whether this is an identity pair is determined using the equality of `Equatable`, not reference identity (`===`).
@@ -394,29 +410,29 @@ extension Delta.Pair: Equatable where Element: Equatable {
 	}
 }
 
-extension Delta.Pair: Hashable where Element: Hashable {}
+extension Pair: Hashable where Element: Hashable {}
 
-extension Delta.Pair: CustomDebugStringConvertible {
+extension Pair: CustomDebugStringConvertible {
 	public var debugDescription: String {
-		"Delta.Pair(source: \(source), target: \(target))"
+		"Pair(source: \(source), target: \(target))"
 	}
 }
 
 #if !$Embedded
-extension Delta.Pair where Element: ~Copyable {
+extension Pair where Element: ~Copyable {
 	public enum CodingKeys: String, CodingKey {
 		case source = "a"
 		case target = "b"
 	}
 }
 
-extension Delta.Pair: Encodable where Element: Encodable {}
+extension Pair: Encodable where Element: Encodable {}
 
 #if canImport(Foundation)
 import Foundation
 
 @available(macOS 12, iOS 15, tvOS 15, visionOS 1, watchOS 8, *)
-extension Delta.Pair: EncodableWithConfiguration where Element: EncodableWithConfiguration {
+extension Pair: EncodableWithConfiguration where Element: EncodableWithConfiguration {
 	public typealias EncodingConfiguration = Element.EncodingConfiguration
 	
 	public func encode(to encoder: any Encoder, configuration: Element.EncodingConfiguration) throws {
@@ -427,13 +443,13 @@ extension Delta.Pair: EncodableWithConfiguration where Element: EncodableWithCon
 }
 #endif
 
-extension Delta.Pair: Decodable where Element: Decodable {}
+extension Pair: Decodable where Element: Decodable {}
 
 #if canImport(Foundation)
 import Foundation
 
 @available(macOS 12, iOS 15, tvOS 15, visionOS 1, watchOS 8, *)
-extension Delta.Pair: DecodableWithConfiguration where Element: DecodableWithConfiguration {
+extension Pair: DecodableWithConfiguration where Element: DecodableWithConfiguration {
 	public typealias DecodingConfiguration = Element.DecodingConfiguration
 	
 	public init(from decoder: any Decoder, configuration: Element.DecodingConfiguration) throws {
@@ -451,10 +467,10 @@ extension Delta.Pair: DecodableWithConfiguration where Element: DecodableWithCon
 #endif
 #endif
 
-extension Delta.Pair: RandomAccessCollection {
-	public typealias Index = Delta.Index
+extension Pair: RandomAccessCollection {
+	public typealias Index = Delta<Element>.Index
 	
-	public typealias SubSequence = Delta.SubSequence
+	public typealias SubSequence = Delta<Element>.SubSequence
 	
 	public typealias Iterator = _DeltaIterator<Element>
 	
