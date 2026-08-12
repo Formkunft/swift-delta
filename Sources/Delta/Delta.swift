@@ -541,16 +541,16 @@ extension Delta: Copyable where Element: Copyable {
 		with other: Delta<T>,
 	) -> Delta<(Element, T)>? {
 		switch self {
-		case .source(let e1):
-			guard case .source(let e2) = other else {
+		case .source(let s1):
+			guard case .source(let s2) = other else {
 				return nil
 			}
-			return .source((e1, e2))
-		case .target(let e1):
-			guard case .target(let e2) = other else {
+			return .source((s1, s2))
+		case .target(let t1):
+			guard case .target(let t2) = other else {
 				return nil
 			}
-			return .target((e1, e2))
+			return .target((t1, t2))
 		case .pair(let s1, let t1):
 			guard case .pair(source: let s2, target: let t2) = other else {
 				return nil
@@ -561,7 +561,7 @@ extension Delta: Copyable where Element: Copyable {
 	
 	/// Returns a new delta composed of the elements of the deltas, provided all are of the same case.
 	///
-	/// If `self` and all `other` deltas are of the same case, their elements are packed in tuple and returned in a new delta.
+	/// If `self` and all `other` deltas are of the same case, their elements are packed in tuples and returned in a new delta.
 	/// Otherwise, `nil` is returned.
 	@_disfavoredOverload
 	@inlinable
@@ -569,20 +569,20 @@ extension Delta: Copyable where Element: Copyable {
 		with other: repeat Delta<each T>,
 	) -> Delta<(Element, repeat each T)>? {
 		switch self {
-		case .source(let e1):
+		case .source(let s1):
 			for delta in repeat each other {
 				guard case .source(_) = delta else {
 					return nil
 				}
 			}
-			return .source((e1, unsafe repeat (each other).source.unsafelyUnwrapped))
-		case .target(let e1):
+			return .source((s1, unsafe repeat (each other).source.unsafelyUnwrapped))
+		case .target(let t1):
 			for delta in repeat each other {
 				guard case .target(_) = delta else {
 					return nil
 				}
 			}
-			return .target((e1, unsafe repeat (each other).target.unsafelyUnwrapped))
+			return .target((t1, unsafe repeat (each other).target.unsafelyUnwrapped))
 		case .pair(let s1, let t1):
 			for delta in repeat each other {
 				guard case .pair(source: _, target: _) = delta else {
