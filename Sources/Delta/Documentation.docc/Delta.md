@@ -51,6 +51,10 @@
 - ``compose(with:)-3i3g8``
 - ``compose(subsetting:)-6egnq``
 - ``compose(subsetting:)-5cgp6``
+- ``compose(subsetting:)-7y1lb``
+- ``compose(subsetting:)-5tvwi``
+- ``compose(intersecting:)-11kdq``
+- ``compose(intersecting:)-35t8``
 
 ### Mapping
 

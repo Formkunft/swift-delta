@@ -299,6 +299,139 @@ struct `Delta tests` {
 		#expect(delta13 == nil)
 	}
 	
+	@Test func `compose subsetting pair`() {
+		// a pair covers every side, so the result is never nil
+		let delta1 = Delta.source(3).compose(subsetting: Pair(source: 5, target: 7))
+		#expect(delta1.source! == (3, 5))
+		
+		let delta2 = Delta.target(3).compose(subsetting: Pair(source: 5, target: 7))
+		#expect(delta2.target! == (3, 7))
+		
+		let delta3 = Delta.pair(source: 3, target: 5).compose(subsetting: Pair(source: 7, target: 11))
+		#expect(delta3.source! == (3, 7))
+		#expect(delta3.target! == (5, 11))
+		
+		let delta4 = Delta.source(3).compose(subsetting: Pair(source: "some string", target: "other string"))
+		#expect(delta4.source! == (3, "some string"))
+	}
+	
+	@Test func `compose subsetting pair multiple`() {
+		let delta1 = Delta.source(3).compose(subsetting: Pair(source: 5, target: 7), Pair(source: 11, target: 13))
+		#expect(delta1.source! == (3, 5, 11))
+		
+		let delta2 = Delta.target(3).compose(subsetting: Pair(source: 5, target: 7), Pair(source: 11, target: 13))
+		#expect(delta2.target! == (3, 7, 13))
+		
+		let delta3 = Delta.pair(source: 3, target: 5).compose(subsetting: Pair(source: 7, target: 11), Pair(source: 13, target: 17))
+		#expect(delta3.source! == (3, 7, 13))
+		#expect(delta3.target! == (5, 11, 17))
+		
+		let delta4 = Delta.source(3).compose(subsetting: Pair(source: "some string", target: "other string"), Pair(source: [3.14], target: [1.41]))
+		#expect(delta4.source! == (3, "some string", [3.14]))
+	}
+	
+	@Test func `compose intersecting`() {
+		let delta1 = Delta.source(3).compose(intersecting: .source(5))
+		#expect(delta1 != nil)
+		#expect(delta1!.source! == (3, 5))
+		
+		let delta2 = Delta.source(3).compose(intersecting: .source("some string"))
+		#expect(delta2 != nil)
+		#expect(delta2!.source! == (3, "some string"))
+		
+		let delta3 = Delta.source(3).compose(intersecting: .pair(source: 5, target: 7))
+		#expect(delta3 != nil)
+		#expect(delta3!.source! == (3, 5))
+		
+		// no side in common
+		let delta4 = Delta.source(3).compose(intersecting: .target(5))
+		#expect(delta4 == nil)
+		
+		let delta5 = Delta.target(3).compose(intersecting: .target(5))
+		#expect(delta5 != nil)
+		#expect(delta5!.target! == (3, 5))
+		
+		let delta6 = Delta.target(3).compose(intersecting: .pair(source: 5, target: 7))
+		#expect(delta6 != nil)
+		#expect(delta6!.target! == (3, 7))
+		
+		// no side in common
+		let delta7 = Delta.target(3).compose(intersecting: .source(5))
+		#expect(delta7 == nil)
+		
+		let delta8 = Delta.pair(source: 3, target: 5).compose(intersecting: .pair(source: 7, target: 11))
+		#expect(delta8 != nil)
+		#expect(delta8!.source! == (3, 7))
+		#expect(delta8!.target! == (5, 11))
+		
+		// a pair is narrowed down to the side of the other delta
+		let delta9 = Delta.pair(source: 3, target: 5).compose(intersecting: .source(7))
+		#expect(delta9 != nil)
+		#expect(delta9!.source! == (3, 7))
+		#expect(delta9!.target == nil)
+		
+		let delta10 = Delta.pair(source: 3, target: 5).compose(intersecting: .target(7))
+		#expect(delta10 != nil)
+		#expect(delta10!.target! == (5, 7))
+		#expect(delta10!.source == nil)
+	}
+	
+	@Test func `compose intersecting multiple`() {
+		let delta1 = Delta.source(3).compose(intersecting: .source(5), .source(7))
+		#expect(delta1 != nil)
+		#expect(delta1!.source! == (3, 5, 7))
+		
+		let delta2 = Delta.source(3).compose(intersecting: .source("some string"), .source([3.14, 1.41]))
+		#expect(delta2 != nil)
+		#expect(delta2!.source! == (3, "some string", [3.14, 1.41]))
+		
+		let delta3 = Delta.source(3).compose(intersecting: .pair(source: 5, target: 7), .source(11))
+		#expect(delta3 != nil)
+		#expect(delta3!.source! == (3, 5, 11))
+		
+		// no side in common
+		let delta4 = Delta.source(3).compose(intersecting: .source(5), .target(7))
+		#expect(delta4 == nil)
+		
+		let delta5 = Delta.target(3).compose(intersecting: .target(5), .pair(source: 7, target: 11))
+		#expect(delta5 != nil)
+		#expect(delta5!.target! == (3, 5, 11))
+		
+		// no side in common
+		let delta6 = Delta.target(3).compose(intersecting: .pair(source: 5, target: 7), .source(11))
+		#expect(delta6 == nil)
+		
+		let delta7 = Delta.pair(source: 3, target: 5).compose(intersecting: .pair(source: 7, target: 11), .pair(source: 13, target: 17))
+		#expect(delta7 != nil)
+		#expect(delta7!.source! == (3, 7, 13))
+		#expect(delta7!.target! == (5, 11, 17))
+		
+		// a pair is narrowed down to the sides shared by all deltas
+		let delta8 = Delta.pair(source: 3, target: 5).compose(intersecting: .pair(source: 7, target: 11), .source(13))
+		#expect(delta8 != nil)
+		#expect(delta8!.source! == (3, 7, 13))
+		#expect(delta8!.target == nil)
+		
+		let delta9 = Delta.pair(source: 3, target: 5).compose(intersecting: .target(7), .pair(source: 11, target: 13))
+		#expect(delta9 != nil)
+		#expect(delta9!.target! == (5, 7, 13))
+		#expect(delta9!.source == nil)
+		
+		let delta10 = Delta.pair(source: 3, target: 5).compose(intersecting: .source(7), .source(11))
+		#expect(delta10 != nil)
+		#expect(delta10!.source! == (3, 7, 11))
+		#expect(delta10!.target == nil)
+		
+		// no side in common
+		let delta11 = Delta.pair(source: 3, target: 5).compose(intersecting: .source(7), .target(11))
+		#expect(delta11 == nil)
+		
+		let delta12 = Delta.pair(source: 3, target: 5).compose(intersecting: .target(7), .source(11))
+		#expect(delta12 == nil)
+		
+		let delta13 = Delta.pair(source: 3, target: 5).compose(subsetting: .identity(5))
+	}
+	
 	@Test func map() {
 		let delta1 = Delta.source(3).map { $0 * 2 }
 		#expect(delta1 == .source(6))

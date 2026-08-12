@@ -563,7 +563,6 @@ extension Delta: Copyable where Element: Copyable {
 	///
 	/// If `self` and all `other` deltas are of the same case, their elements are packed in tuples and returned in a new delta.
 	/// Otherwise, `nil` is returned.
-	@_disfavoredOverload
 	@inlinable
 	public func compose<each T>(
 		with other: repeat Delta<each T>,
@@ -599,8 +598,7 @@ extension Delta: Copyable where Element: Copyable {
 	///
 	/// If `other` has elements for at least the same sides as `self`, those elements are paired and returned in a new delta.
 	/// Otherwise, when `other` has no element for a side of `self`, `nil` is returned.
-	///
-	/// Unlike ``compose(with:)-8akco``, this method is not symmetrical.
+	@_disfavoredOverload
 	@inlinable
 	public func compose<T>(
 		subsetting other: Delta<T>,
@@ -628,8 +626,6 @@ extension Delta: Copyable where Element: Copyable {
 	///
 	/// If all `other` deltas have elements for at least the same sides as `self`, `self`’s and their elements are packed in tuples and returned in a new delta.
 	/// Otherwise, when any `other` delta has no element for a side of `self`, `nil` is returned.
-	///
-	/// Unlike ``compose(with:)-3i3g8``, this method is not symmetrical.
 	@_disfavoredOverload
 	@inlinable
 	public func compose<each T>(
@@ -659,6 +655,127 @@ extension Delta: Copyable where Element: Copyable {
 			return .pair(
 				source: (s1, unsafe repeat (each other).source.unsafelyUnwrapped),
 				target: (t1, unsafe repeat (each other).target.unsafelyUnwrapped))
+		}
+	}
+	
+	/// Returns a new delta composed of the elements of the delta and the pair.
+	///
+	/// The returned delta is of the same case as `self`.
+	@inlinable
+	public func compose<T>(
+		subsetting other: Pair<T>,
+	) -> Delta<(Element, T)> {
+		switch self {
+		case .source(let s1):
+			.source((s1, other.source))
+		case .target(let t1):
+			.target((t1, other.target))
+		case .pair(let s1, let t1):
+			.pair(source: (s1, other.source), target: (t1, other.target))
+		}
+	}
+	
+	/// Returns a new delta composed of the elements of the delta and the pairs.
+	///
+	/// The returned delta is of the same case as `self`.
+	@inlinable
+	public func compose<each T>(
+		subsetting other: repeat Pair<each T>,
+	) -> Delta<(Element, repeat each T)> {
+		switch self {
+		case .source(let s1):
+			.source((s1, repeat (each other).source))
+		case .target(let t1):
+			.target((t1, repeat (each other).target))
+		case .pair(let s1, let t1):
+			.pair(
+				source: (s1, repeat (each other).source),
+				target: (t1, repeat (each other).target))
+		}
+	}
+	
+	/// Returns a new delta composed of the elements of the two deltas, limited to the sides both deltas have in common.
+	///
+	/// The returned delta has elements for those sides for which both `self` and `other` have elements.
+	/// Otherwise, when `other` covers no side of `self`, `nil` is returned.
+	@inlinable
+	public func compose<T>(
+		intersecting other: Delta<T>,
+	) -> Delta<(Element, T)>? {
+		switch self {
+		case .source(let s1):
+			guard let s2 = other.source else {
+				return nil
+			}
+			return .source((s1, s2))
+		case .target(let t1):
+			guard let t2 = other.target else {
+				return nil
+			}
+			return .target((t1, t2))
+		case .pair(let s1, let t1):
+			switch other {
+			case .source(let s2):
+				return .source((s1, s2))
+			case .target(let t2):
+				return .target((t1, t2))
+			case .pair(source: let s2, target: let t2):
+				return .pair(source: (s1, s2), target: (t1, t2))
+			}
+		}
+	}
+	
+	/// Returns a new delta composed of the elements of the deltas, limited to the sides all deltas have in common.
+	///
+	/// The returned delta has elements for those sides for which `self` and all `other` deltas have elements.
+	/// Otherwise, when no side of `self` is covered by all `other` deltas, `nil` is returned.
+	@inlinable
+	public func compose<each T>(
+		intersecting other: repeat Delta<each T>,
+	) -> Delta<(Element, repeat each T)>? {
+		switch self {
+		case .source(let s1):
+			for delta in repeat each other {
+				if case .target(_) = delta {
+					return nil
+				}
+			}
+			return .source((s1, unsafe repeat (each other).source.unsafelyUnwrapped))
+		case .target(let t1):
+			for delta in repeat each other {
+				if case .source(_) = delta {
+					return nil
+				}
+			}
+			return .target((t1, unsafe repeat (each other).target.unsafelyUnwrapped))
+		case .pair(let s1, let t1):
+			var hasSource = true
+			var hasTarget = true
+			
+			for delta in repeat each other {
+				switch delta {
+				case .source(_): hasTarget = false
+				case .target(_): hasSource = false
+				case .pair(source: _, target: _): break
+				}
+			}
+			
+			if hasSource {
+				if hasTarget {
+					return .pair(
+						source: (s1, unsafe repeat (each other).source.unsafelyUnwrapped),
+						target: (t1, unsafe repeat (each other).target.unsafelyUnwrapped))
+				}
+				else {
+					return .source((s1, unsafe repeat (each other).source.unsafelyUnwrapped))
+				}
+			}
+			else if hasTarget {
+				return .target((t1, unsafe repeat (each other).target.unsafelyUnwrapped))
+			}
+			else {
+				return nil
+			}
 		}
 	}
 	

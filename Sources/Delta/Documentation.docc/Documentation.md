@@ -12,3 +12,9 @@ This `Delta` type represents an inclusive OR relation: Either a source element i
 `Delta` behaves similar to `Optional`, but instead of representing 0 or 1 elements, it represents 1 or 2 elements.
 
 The ``Delta/Pair`` type shares its API with `Delta` but always stores both a source and target element.
+
+## Topics
+
+- ``Delta/Delta``
+- ``Delta/DeltaSide``
+- ``Delta/Pair``
