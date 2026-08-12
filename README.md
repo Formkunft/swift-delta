@@ -27,7 +27,7 @@ Both sides are accessible via optional `source` and `target` properties.
 
 There are many convenient methods, including mapping a delta by transforming its elements, composing multiple deltas, coalescing a delta to a single element, and subscripting into either side of a delta.
 
-The `Delta` and `Delta.Pair` types also conform to all standard protocols (depending on the conformances of the `Element` type):
+The `Delta` and `Pair` types also conform to all standard protocols (depending on the conformances of the `Element` type):
 
 - `Equatable`
 - `Hashable`
