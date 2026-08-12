@@ -8,7 +8,7 @@ Swift Delta is a package for a type `Delta<Element>` with three cases:
 - `target(Element)`
 - `pair(source: Element, target: Element)`
 
-There is also a `Delta.Pair` type that shares its API with `Delta` but always stores both a source and target element.
+There is also a `Pair` type that shares its API with `Delta` but always stores both a source and target element.
 
 ***
 
