@@ -444,30 +444,68 @@ extension Delta where Element: ~Copyable {
 	/// - Throws: Errors thrown by either `intermediateContext` or `process` are rethrown.
 	@inlinable
 	public func withIntermediate<E, I, T>(
-		// this is escaping to fulfill <https://github.com/swiftlang/swift-evolution/blob/main/proposals/0176-enforce-exclusive-access-to-memory.md#restrictions-on-recursive-uses-of-non-escaping-closures>
-		_ intermediateContext: @escaping (
+		_ intermediateContext: (
 			_ element: borrowing Element,
 			_ transform: (I) throws(E) -> T,
 		) throws(E) -> T,
 		process: (borrowing Delta<I>) throws(E) -> T,
 	) throws(E) -> T {
-		switch self {
-		case .source(let element):
-			return try intermediateContext(element) { intermediate throws(E) in
-				try process(.source(intermediate))
-			}
-		case .target(let element):
-			return try intermediateContext(element) { intermediate throws(E) in
-				try process(.target(intermediate))
-			}
-		case .pair(source: let source, target: let target):
-			return try intermediateContext(source) { sourceIntermediate throws(E) in
-				try intermediateContext(target) { targetIntermediate throws(E) in
-					try process(.pair(source: sourceIntermediate, target: targetIntermediate))
+		// `withoutActuallyEscaping` is needed to work around the Non-Escaping Parameter Call Restriction (NPCR) <https://github.com/swiftlang/swift-evolution/blob/main/proposals/0176-enforce-exclusive-access-to-memory.md#restrictions-on-recursive-uses-of-non-escaping-closures>
+		try withoutActuallyEscaping(intermediateContext) { intermediateContext throws(E) in
+			switch self {
+			case .source(let element):
+				try intermediateContext(element) { intermediate throws(E) in
+					try process(.source(intermediate))
+				}
+			case .target(let element):
+				try intermediateContext(element) { intermediate throws(E) in
+					try process(.target(intermediate))
+				}
+			case .pair(source: let source, target: let target):
+				try intermediateContext(source) { sourceIntermediate throws(E) in
+					try intermediateContext(target) { targetIntermediate throws(E) in
+						try process(.pair(source: sourceIntermediate, target: targetIntermediate))
+					}
 				}
 			}
 		}
 	}
+	
+	#if compiler(<6.4)
+	// a compiler bug pre-6.4 prevented compiling withIntermediate with E == Never
+	
+	/// Returns the result of processing an intermediate delta.
+	///
+	/// This is a non-throwing overload of ``withIntermediate(_:process:)-7xgl9``.
+	@inlinable
+	public func withIntermediate<I, T>(
+		_ intermediateContext: (
+			_ element: borrowing Element,
+			_ transform: (I) -> T,
+		) -> T,
+		process: (borrowing Delta<I>) -> T,
+	) -> T {
+		// `withoutActuallyEscaping` is needed to work around the Non-Escaping Parameter Call Restriction (NPCR) <https://github.com/swiftlang/swift-evolution/blob/main/proposals/0176-enforce-exclusive-access-to-memory.md#restrictions-on-recursive-uses-of-non-escaping-closures>
+		withoutActuallyEscaping(intermediateContext) { intermediateContext in
+			switch self {
+			case .source(let element):
+				intermediateContext(element) { intermediate in
+					process(.source(intermediate))
+				}
+			case .target(let element):
+				intermediateContext(element) { intermediate in
+					process(.target(intermediate))
+				}
+			case .pair(source: let source, target: let target):
+				intermediateContext(source) { sourceIntermediate in
+					intermediateContext(target) { targetIntermediate in
+						process(.pair(source: sourceIntermediate, target: targetIntermediate))
+					}
+				}
+			}
+		}
+	}
+	#endif
 }
 
 extension Delta: Copyable where Element: Copyable {

@@ -664,6 +664,38 @@ struct `Delta tests` {
 		#expect(!delta6.isIdentity())
 	}
 	
+	@Test func `with intermediate`() {
+		let delta1 = Delta<[UInt8]>.source([0x00, 0x01, 0x02])
+		#expect(delta1.withIntermediate(bytes, process: { $0.map { $0.count } }) == [3])
+		
+		let delta2 = Delta<[UInt8]>.target([0x00, 0x01, 0x02])
+		#expect(delta2.withIntermediate(bytes, process: { $0.map { $0.count } }) == [3])
+		
+		let delta3 = Delta<[UInt8]>.pair(source: [0x00], target: [0x01, 0x02])
+		#expect(delta3.withIntermediate(bytes, process: { $0.map { $0.count } }) == [1, 2])
+	}
+	
+	@Test func `with intermediate throwing`() {
+		let delta = Delta<[UInt8]>.pair(source: [0x00], target: [0x01, 0x02])
+		
+		#expect(throws: IntermediateError.self) {
+			try delta.withIntermediate { (element, transform) throws(IntermediateError) in
+				try transform(element.count)
+			} process: { _ throws(IntermediateError) -> Int in
+				throw IntermediateError()
+			}
+		}
+		
+		#expect(throws: IntermediateError.self) {
+			try delta.withIntermediate { (element, transform) throws(IntermediateError) -> Int in
+				guard element.count == 1 else { throw IntermediateError() }
+				return try transform(element.count)
+			} process: { delta throws(IntermediateError) -> Int in
+				delta.first
+			}
+		}
+	}
+	
 	@Test func `first and last`() {
 		let d1 = Delta.source(3)
 		#expect(d1.first == 3)

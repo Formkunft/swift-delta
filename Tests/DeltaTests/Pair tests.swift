@@ -173,6 +173,32 @@ struct `Pair tests` {
 		#expect(!p3.isIdentity())
 	}
 	
+	@Test func `with intermediate`() {
+		let pair = Pair<[UInt8]>(source: [0x00], target: [0x01, 0x02])
+		#expect(pair.withIntermediate(bytes, process: { $0.map { $0.count } }) == [1, 2])
+	}
+	
+	@Test func `with intermediate throwing`() {
+		let pair = Pair<[UInt8]>(source: [0x00], target: [0x01, 0x02])
+		
+		#expect(throws: IntermediateError.self) {
+			try pair.withIntermediate { (element, transform) throws(IntermediateError) in
+				try transform(element.count)
+			} process: { _ throws(IntermediateError) -> Int in
+				throw IntermediateError()
+			}
+		}
+		
+		#expect(throws: IntermediateError.self) {
+			try pair.withIntermediate { (element, transform) throws(IntermediateError) -> Int in
+				guard element.count == 1 else { throw IntermediateError() }
+				return try transform(element.count)
+			} process: { pair throws(IntermediateError) -> Int in
+				pair.source + pair.target
+			}
+		}
+	}
+	
 	@Test func identity() {
 		let p = Pair.identity(5)
 		#expect(p.source == 5)

@@ -41,7 +41,7 @@
 - ``asyncMapAny(_:)``
 - ``asyncMapAll(_:)``
 - ``compacted()``
-- ``withIntermediate(_:process:)``
+- ``withIntermediate(_:process:)-7ivpt``
 
 ### Updating
 

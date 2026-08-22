@@ -242,19 +242,46 @@ extension Pair where Element: ~Copyable {
 	/// - Throws: Errors thrown by either `intermediateContext` or `process` are rethrown.
 	@inlinable
 	public func withIntermediate<E, I, T>(
-		// this is escaping to fulfill <https://github.com/swiftlang/swift-evolution/blob/main/proposals/0176-enforce-exclusive-access-to-memory.md#restrictions-on-recursive-uses-of-non-escaping-closures>
-		_ intermediateContext: @escaping (
+		_ intermediateContext: (
 			_ element: borrowing Element,
 			_ transform: (I) throws(E) -> T,
 		) throws(E) -> T,
 		process: (borrowing Pair<I>) throws(E) -> T,
 	) throws(E) -> T {
-		try intermediateContext(self.source) { sourceIntermediate throws(E) in
-			try intermediateContext(self.target) { targetIntermediate throws(E) in
-				try process(Pair<I>(source: sourceIntermediate, target: targetIntermediate))
+		// `withoutActuallyEscaping` is needed to work around the Non-Escaping Parameter Call Restriction (NPCR) <https://github.com/swiftlang/swift-evolution/blob/main/proposals/0176-enforce-exclusive-access-to-memory.md#restrictions-on-recursive-uses-of-non-escaping-closures>
+		try withoutActuallyEscaping(intermediateContext) { intermediateContext throws(E) in
+			try intermediateContext(self.source) { sourceIntermediate throws(E) in
+				try intermediateContext(self.target) { targetIntermediate throws(E) in
+					try process(Pair<I>(source: sourceIntermediate, target: targetIntermediate))
+				}
 			}
 		}
 	}
+	
+	#if compiler(<6.4)
+	// a compiler bug pre-6.4 prevented compiling withIntermediate with E == Never
+
+	/// Returns the result of processing an intermediate delta.
+	///
+	/// This is a non-throwing overload of ``withIntermediate(_:process:)-7ivpt``.
+	@inlinable
+	public func withIntermediate<I, T>(
+		_ intermediateContext: (
+			_ element: borrowing Element,
+			_ transform: (I) -> T,
+		) -> T,
+		process: (borrowing Pair<I>) -> T,
+	) -> T {
+		// `withoutActuallyEscaping` is needed to work around the Non-Escaping Parameter Call Restriction (NPCR) <https://github.com/swiftlang/swift-evolution/blob/main/proposals/0176-enforce-exclusive-access-to-memory.md#restrictions-on-recursive-uses-of-non-escaping-closures>
+		withoutActuallyEscaping(intermediateContext) { intermediateContext in
+			intermediateContext(self.source) { sourceIntermediate in
+				intermediateContext(self.target) { targetIntermediate in
+					process(Pair<I>(source: sourceIntermediate, target: targetIntermediate))
+				}
+			}
+		}
+	}
+	#endif
 }
 
 extension Pair: Copyable where Element: Copyable {
