@@ -429,7 +429,10 @@ struct `Delta tests` {
 		let delta12 = Delta.pair(source: 3, target: 5).compose(intersecting: .target(7), .source(11))
 		#expect(delta12 == nil)
 		
-		let delta13 = Delta.pair(source: 3, target: 5).compose(subsetting: .identity(5))
+		let delta13 = Delta.pair(source: 3, target: 5).compose(subsetting: Delta.identity(5))
+		#expect(delta13 != nil)
+		#expect(delta13!.source! == (3, 5))
+		#expect(delta13!.target! == (5, 5))
 	}
 	
 	@Test func map() {
