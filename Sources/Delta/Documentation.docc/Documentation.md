@@ -16,5 +16,5 @@ The ``Delta/Pair`` type shares its API with `Delta` but always stores both a sou
 ## Topics
 
 - ``Delta/Delta``
-- ``Delta/DeltaSide``
 - ``Delta/Pair``
+- ``Delta/DeltaSide``
